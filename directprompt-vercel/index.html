@@ -1,134 +1,126 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DirecPrompt Master - Crabtive Lab Protocol 3.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600&family=Luckiest+Guy&display=swap" rel="stylesheet">
-    <style>
-        .font-lucky { font-family: 'Luckiest Guy', cursive; letter-spacing: 2px; }
-        .font-fredoka { font-family: 'Fredoka', sans-serif; }
-        body {
-            background-color: #0c0c0c;
-            background-image:
-                radial-gradient(at 0% 0%, hsla(339,49%,15%,1) 0, transparent 50%),
-                radial-gradient(at 100% 0%, hsla(225,39%,15%,1) 0, transparent 50%),
-                radial-gradient(at 50% 100%, hsla(253,16%,10%,1) 0, transparent 50%);
-            min-height: 100vh;
-            color: #e2e8f0;
-            overflow-x: hidden;
-        }
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.6);
-        }
-        .btn-pop {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #0f172a;
-            border-bottom: 5px solid #92400e;
-            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .btn-pop:active {
-            transform: translateY(3px);
-            border-bottom: 0;
-            margin-top: 5px;
-        }
-        .btn-pop:hover {
-            filter: brightness(1.1);
-            transform: scale(1.01);
-        }
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fbbf24;
-            padding: 6px 14px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            z-index: 10;
-        }
-        .copy-btn:hover {
-            background: #fbbf24;
-            color: #0f172a;
-        }
-        .loading-dots::after {
-            content: '.';
-            animation: dots 1.5s steps(5, end) infinite;
-        }
-        @keyframes dots {
-            0%, 20% { opacity: 0; }
-            40% { opacity: 1; }
-            100% { opacity: 1; }
-        }
-        .fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        select option {
-            background-color: #0f172a;
-            color: white;
-        }
-        .input-focus:focus {
-            border-color: #fbbf24;
-            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1);
-        }
-
-        #historyDrawer.open { transform: translateX(0); }
-        .history-card {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 1.25rem;
-            padding: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        .history-card:hover {
-            border-color: rgba(251, 191, 36, 0.35);
-            transform: translateY(-1px);
-        }
-        .history-title {
-            font-size: 0.82rem;
-            line-height: 1.2rem;
-            color: #f8fafc;
-            font-weight: 600;
-        }
-        .history-meta {
-            font-size: 0.65rem;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-        }
-        .history-actions {
-            display: flex;
-            gap: 0.4rem;
-            flex-wrap: wrap;
-            margin-top: 0.7rem;
-        }
-        .history-action-btn {
-            font-size: 0.62rem;
-            padding: 0.35rem 0.6rem;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.08);
-            transition: all 0.15s ease;
-        }
-        .history-action-btn:hover {
-            transform: translateY(-1px);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DirecPrompt Master - Crabtive Lab Protocol 3.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600&family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <style>
+    .font-lucky { font-family: 'Luckiest Guy', cursive; letter-spacing: 2px; }
+    .font-fredoka { font-family: 'Fredoka', sans-serif; }
+    body {
+      background-color: #0c0c0c;
+      background-image:
+        radial-gradient(at 0% 0%, hsla(339,49%,15%,1) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(225,39%,15%,1) 0, transparent 50%),
+        radial-gradient(at 50% 100%, hsla(253,16%,10%,1) 0, transparent 50%);
+      min-height: 100vh;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+    }
+    .btn-pop {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #0f172a;
+      border-bottom: 5px solid #92400e;
+      transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .btn-pop:active {
+      transform: translateY(3px);
+      border-bottom: 0;
+      margin-top: 5px;
+    }
+    .btn-pop:hover {
+      filter: brightness(1.1);
+      transform: scale(1.01);
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fbbf24;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+    .copy-btn:hover {
+      background: #fbbf24;
+      color: #0f172a;
+    }
+    .loading-dots::after {
+      content: '.';
+      animation: dots 1.5s steps(5, end) infinite;
+    }
+    @keyframes dots {
+      0%, 20% { opacity: 0; }
+      40% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+    .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    select option { background-color: #0f172a; color: white; }
+    .input-focus:focus {
+      border-color: #fbbf24;
+      box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1);
+    }
+    #historyDrawer.open { transform: translateX(0); }
+    .history-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1.25rem;
+      padding: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    .history-card:hover {
+      border-color: rgba(251, 191, 36, 0.35);
+      transform: translateY(-1px);
+    }
+    .history-title {
+      font-size: 0.82rem;
+      line-height: 1.2rem;
+      color: #f8fafc;
+      font-weight: 600;
+    }
+    .history-meta {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .history-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.7rem;
+    }
+    .history-action-btn {
+      font-size: 0.62rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.15s ease;
+    }
+    .history-action-btn:hover { transform: translateY(-1px); }
+  </style>
 </head>
 <body class="p-4 md:p-8 font-fredoka antialiased">
   <div class="max-w-7xl mx-auto">
@@ -147,12 +139,10 @@
           <button id="toggleModeBtn" class="glass-panel text-blue-200 font-bold py-3 px-8 rounded-2xl border border-white/10 transition-all text-xs uppercase hover:bg-white/5 shadow-xl">
             MODO EXPERTO ⚡
           </button>
-
           <div class="flex gap-3">
             <button id="randomBtn" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 font-bold py-3 px-6 rounded-2xl text-xs uppercase transition-all flex items-center gap-2 shadow-lg">
               <span>🎲</span> INSPIRACIÓN
             </button>
-
             <button id="clearBtn" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 font-bold py-3 px-6 rounded-2xl text-xs uppercase transition-all shadow-lg">
               🗑️ LIMPIAR
             </button>
@@ -173,7 +163,6 @@
                     <label class="text-yellow-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Acción</label>
                     <input type="text" id="action" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus transition-all text-sm shadow-inner" placeholder="Ej: reparando el tiempo" />
                   </div>
-
                   <div>
                     <label class="text-yellow-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Entorno</label>
                     <input type="text" id="environment" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus transition-all text-sm shadow-inner" placeholder="Ej: en el vacío estelar" />
@@ -193,7 +182,6 @@
                       <option value="unreal engine 5, octane render, 3d volumetric">Render 3D</option>
                     </select>
                   </div>
-
                   <div>
                     <label class="text-blue-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Iluminación</label>
                     <select id="lighting" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus text-sm transition-all">
@@ -219,7 +207,6 @@
                       <option value="top down perspective, aerial drone view">Cenital</option>
                     </select>
                   </div>
-
                   <div>
                     <label class="text-emerald-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Proporción (Aspect Ratio)</label>
                     <select id="aspectRatio" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none focus:border-emerald-400 text-sm">
@@ -237,13 +224,11 @@
 
               <div class="mt-10 pt-8 border-t border-white/10">
                 <h3 class="text-rose-400 font-lucky text-xl mb-5 uppercase tracking-widest text-center">Filtro de Exclusión</h3>
-
                 <div class="flex flex-wrap gap-3 mb-5 justify-center">
                   <button class="bg-slate-900/60 text-gray-400 border border-white/5 rounded-2xl px-5 py-2.5 text-[10px] uppercase font-bold hover:border-rose-500 hover:text-rose-300 transition-all shadow-lg" data-value="blurry, low quality, distorted, watermark, signature">Calidad</button>
                   <button class="bg-slate-900/60 text-gray-400 border border-white/5 rounded-2xl px-5 py-2.5 text-[10px] uppercase font-bold hover:border-rose-500 hover:text-rose-300 transition-all shadow-lg" data-value="deformed, bad anatomy, extra fingers, missing limbs">Anatomía</button>
                   <button class="bg-slate-900/60 text-gray-400 border border-white/5 rounded-2xl px-5 py-2.5 text-[10px] uppercase font-bold hover:border-rose-500 hover:text-rose-300 transition-all shadow-lg" data-value="text, letters, digits, typography">Texto</button>
                 </div>
-
                 <input type="text" id="customNegative" class="w-full p-5 bg-slate-950/30 text-white border border-white/5 rounded-2xl focus:ring-1 focus:ring-rose-500 outline-none text-sm placeholder-slate-600 shadow-inner" placeholder="Otros elementos prohibidos..." />
               </div>
             </div>
@@ -274,13 +259,11 @@
           <div class="absolute top-0 left-0 w-2.5 h-full bg-yellow-400 shadow-[0_0_25px_rgba(251,191,36,0.6)]"></div>
           <div class="p-8">
             <h3 class="font-lucky text-2xl text-yellow-400 mb-6 uppercase tracking-widest">🎨 Midjourney</h3>
-
             <div class="bg-slate-950/80 rounded-[2rem] p-6 mb-5 border border-white/5 relative">
               <span class="text-[9px] font-bold text-yellow-600 uppercase tracking-widest block mb-2">Traducción Detallada</span>
               <div id="mjPromptes" class="text-[13px] text-slate-300 font-mono leading-relaxed pr-12 whitespace-pre-wrap"></div>
               <button onclick="safeCopy('mjPromptes', this)" class="copy-btn">COPIAR</button>
             </div>
-
             <div class="bg-slate-950/80 rounded-[2rem] p-6 border border-white/5 relative">
               <span class="text-[9px] font-bold text-yellow-400 uppercase tracking-widest block mb-2">Prompt Maestro (Full Tech)</span>
               <div id="mjPrompten" class="text-[13px] text-yellow-100 font-mono leading-relaxed pr-12 whitespace-pre-wrap"></div>
@@ -293,13 +276,11 @@
           <div class="absolute top-0 left-0 w-2.5 h-full bg-emerald-500"></div>
           <div class="p-8">
             <h3 class="font-lucky text-2xl text-emerald-400 mb-6 uppercase tracking-widest">🌈 DALL-E 3</h3>
-
             <div class="bg-slate-950/80 rounded-[2rem] p-6 mb-5 border border-white/5 relative">
               <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-2">Español Detallado</span>
               <div id="dallePromptes" class="text-[13px] text-slate-300 font-mono leading-relaxed pr-12 whitespace-pre-wrap"></div>
               <button onclick="safeCopy('dallePromptes', this)" class="copy-btn">COPIAR</button>
             </div>
-
             <div class="bg-slate-950/80 rounded-[2rem] p-6 border border-white/5 relative">
               <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-2">Narrativa Visual (EN)</span>
               <div id="dallePrompten" class="text-[13px] text-emerald-100 font-mono leading-relaxed pr-12 whitespace-pre-wrap"></div>
@@ -312,13 +293,11 @@
           <div class="absolute top-0 left-0 w-2.5 h-full bg-purple-500"></div>
           <div class="p-8">
             <h3 class="font-lucky text-3xl text-purple-400 mb-6 uppercase tracking-widest">🧪 Stable Diffusion</h3>
-
             <div class="bg-slate-950/80 rounded-[2rem] p-6 mb-5 border border-white/5 relative">
               <span class="text-[10px] font-bold text-purple-400 uppercase block mb-2">Positivo (Weighted)</span>
               <div id="sdPositivePrompten" class="text-[13px] text-purple-100 font-mono leading-relaxed pr-12 whitespace-pre-wrap"></div>
               <button onclick="safeCopy('sdPositivePrompten', this)" class="copy-btn">COPIAR</button>
             </div>
-
             <div class="bg-slate-950/80 rounded-[2rem] p-6 border border-red-900/20 relative">
               <span class="text-[10px] font-bold text-red-400 uppercase block mb-2">Negativo (Control)</span>
               <div id="sdNegativePrompten" class="text-[13px] text-slate-400 font-mono leading-relaxed pr-12 whitespace-pre-wrap"></div>
@@ -344,7 +323,6 @@
             Protocolo de Datos (JSON Profile)
             <span class="transform group-open:rotate-180 transition-all text-yellow-400">▼</span>
           </summary>
-
           <div class="p-8 pt-0 bg-slate-950/70 relative">
             <div class="relative pt-10">
               <button onclick="safeCopy('fullJsonOutput', this)" class="copy-btn" style="top: 10px; right: 0;">COPIAR JSON</button>
@@ -356,10 +334,7 @@
     </main>
   </div>
 
-  <button id="historyToggleBtn" class="fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full bg-yellow-400 text-slate-950 font-bold shadow-2xl border-4 border-yellow-200 hover:scale-105 transition-all flex items-center justify-center">
-    ⏳
-  </button>
-
+  <button id="historyToggleBtn" class="fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full bg-yellow-400 text-slate-950 font-bold shadow-2xl border-4 border-yellow-200 hover:scale-105 transition-all flex items-center justify-center">⏳</button>
   <div id="historyOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55] hidden"></div>
 
   <aside id="historyDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-slate-950/95 border-l border-white/10 shadow-2xl z-[56] transform translate-x-full transition-transform duration-300 flex flex-col">
@@ -370,547 +345,293 @@
       </div>
       <button id="historyCloseBtn" class="text-slate-300 hover:text-white text-2xl leading-none">×</button>
     </div>
-
     <div class="p-4 border-b border-white/10 flex gap-2">
       <button id="exportHistoryTxtBtn" class="flex-1 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold uppercase hover:bg-cyan-500/30 transition-all">Export TXT</button>
       <button id="exportHistoryJsonBtn" class="flex-1 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold uppercase hover:bg-emerald-500/30 transition-all">Export JSON</button>
     </div>
-
     <div id="historyList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
   </aside>
 
-<script>
-  const RANDOMDATA = {
-    subjects: [
-      "Ciber-Gato DJ",
-      "Deidad Maya de Obsidiana",
-      "Robot Jardinero de Latón",
-      "Astronauta de Cristal",
-      "Dragón Neón",
-      "Samurái Ajolote",
-      "Nómada del Desierto de Cuarzo",
-      "IA Holográfica",
-      "Vikingo Ciberpunk",
-      "Medusa de Fibra Óptica",
-      "Fénix Mecánico",
-      "Guardiana de Galaxias",
-      "Chamán de Bits",
-      "Esfinge de Mercurio"
-    ],
-    actions: [
-      "tejiendo hilos de luz",
-      "meditando en gravedad cero",
-      "invocando una tormenta",
-      "cultivando flores eléctricas",
-      "leyendo el código del universo",
-      "surfeando una nebulosa de gas",
-      "forjando un rayo azul",
-      "custodiando un portal antiguo",
-      "transmutando metal en agua",
-      "componiendo música estelar",
-      "reparando el tejido del tiempo"
-    ],
-    environments: [
-      "en un Tokio año 3000",
-      "bajo el océano bioluminiscente",
-      "dentro de un reloj antiguo",
-      "en la cima de una pirámide de neón",
-      "en una estación espacial de mármol",
-      "en un bosque de espejos",
-      "en una ciudad flotante steampunk",
-      "en un microchip de oro puro",
-      "en un valle de auroras boreales",
-      "en el centro de un agujero negro"
-    ],
-    styles: [
-      "cinematic photorealistic, 8k, movie still, highly detailed",
-      "studio ghibli style, whimsical, hand-drawn anime",
-      "digital art illustration, trending on artstation, masterpiece",
-      "cyberpunk aesthetic, synthwave neon, futuristic",
-      "classic oil painting, textured canvas, museum quality",
-      "unreal engine 5, octane render, 3d volumetric"
-    ],
-    lightings: [
-      "dramatic rim lighting, high contrast, moody",
-      "soft volumetric sunlight, ethereal glow",
-      "neon cyberpunk night, hazy fog, glowing accents",
-      "golden hour rays, warm hazy light",
-      "professional studio lighting, softbox",
-      "bioluminescent glow, mystical light"
-    ],
-    compositions: [
-      "wide shot, epic cinematic scale, landscape",
-      "extreme close up portrait, macro detail",
-      "low angle, heroic perspective, grand scale",
-      "symmetrical centered composition, balanced",
-      "top down perspective, aerial drone view"
-    ],
-    ratios: ["1:1", "4:5", "9:16", "16:9", "21:9", "3:2"]
-  };
+  <script>
+    const RANDOMDATA = {
+      subjects: ["Ciber-Gato DJ","Deidad Maya de Obsidiana","Robot Jardinero de Latón","Astronauta de Cristal","Dragón Neón","Samurái Ajolote","Nómada del Desierto de Cuarzo","IA Holográfica","Vikingo Ciberpunk","Medusa de Fibra Óptica","Fénix Mecánico","Guardiana de Galaxias","Chamán de Bits","Esfinge de Mercurio"],
+      actions: ["tejiendo hilos de luz","meditando en gravedad cero","invocando una tormenta","cultivando flores eléctricas","leyendo el código del universo","surfeando una nebulosa de gas","forjando un rayo azul","custodiando un portal antiguo","transmutando metal en agua","componiendo música estelar","reparando el tejido del tiempo"],
+      environments: ["en un Tokio año 3000","bajo el océano bioluminiscente","dentro de un reloj antiguo","en la cima de una pirámide de neón","en una estación espacial de mármol","en un bosque de espejos","en una ciudad flotante steampunk","en un microchip de oro puro","en un valle de auroras boreales","en el centro de un agujero negro"],
+      styles: ["cinematic photorealistic, 8k, movie still, highly detailed","studio ghibli style, whimsical, hand-drawn anime","digital art illustration, trending on artstation, masterpiece","cyberpunk aesthetic, synthwave neon, futuristic","classic oil painting, textured canvas, museum quality","unreal engine 5, octane render, 3d volumetric"],
+      lightings: ["dramatic rim lighting, high contrast, moody","soft volumetric sunlight, ethereal glow","neon cyberpunk night, hazy fog, glowing accents","golden hour rays, warm hazy light","professional studio lighting, softbox","bioluminescent glow, mystical light"],
+      compositions: ["wide shot, epic cinematic scale, landscape","extreme close up portrait, macro detail","low angle, heroic perspective, grand scale","symmetrical centered composition, balanced","top down perspective, aerial drone view"],
+      ratios: ["1:1","4:5","9:16","16:9","21:9","3:2"]
+    };
 
-  const generateBtn = document.getElementById('generateBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const randomBtn = document.getElementById('randomBtn');
-  const resultsSection = document.getElementById('results');
-  const statusLog = document.getElementById('statusLog');
-  const toggleModeBtn = document.getElementById('toggleModeBtn');
-  const learnerModeDiv = document.getElementById('learnerMode');
-  const expertModeDiv = document.getElementById('expertMode');
-  const expertPromptTextarea = document.getElementById('expertPrompt');
+    const generateBtn = document.getElementById('generateBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const randomBtn = document.getElementById('randomBtn');
+    const resultsSection = document.getElementById('results');
+    const statusLog = document.getElementById('statusLog');
+    const toggleModeBtn = document.getElementById('toggleModeBtn');
+    const learnerModeDiv = document.getElementById('learnerMode');
+    const expertModeDiv = document.getElementById('expertMode');
+    const expertPromptTextarea = document.getElementById('expertPrompt');
 
-  const HISTORY_KEY = 'directprompt_history_v2';
-  let promptHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-  const historyToggleBtn = document.getElementById('historyToggleBtn');
-  const historyDrawer = document.getElementById('historyDrawer');
-  const historyOverlay = document.getElementById('historyOverlay');
-  const historyCloseBtn = document.getElementById('historyCloseBtn');
-  const historyList = document.getElementById('historyList');
-  const exportHistoryTxtBtn = document.getElementById('exportHistoryTxtBtn');
-  const exportHistoryJsonBtn = document.getElementById('exportHistoryJsonBtn');
+    const HISTORY_KEY = 'directprompt_history_v2';
+    let promptHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    const historyToggleBtn = document.getElementById('historyToggleBtn');
+    const historyDrawer = document.getElementById('historyDrawer');
+    const historyOverlay = document.getElementById('historyOverlay');
+    const historyCloseBtn = document.getElementById('historyCloseBtn');
+    const historyList = document.getElementById('historyList');
+    const exportHistoryTxtBtn = document.getElementById('exportHistoryTxtBtn');
+    const exportHistoryJsonBtn = document.getElementById('exportHistoryJsonBtn');
 
-  let isExpertMode = false;
-  const negativeValues = new Set();
+    let isExpertMode = false;
+    const negativeValues = new Set();
 
-  function saveHistory() {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(promptHistory));
-  }
+    function saveHistory() { localStorage.setItem(HISTORY_KEY, JSON.stringify(promptHistory)); }
+    function openHistoryDrawer() { historyDrawer.classList.add('open'); historyOverlay.classList.remove('hidden'); }
+    function closeHistoryDrawer() { historyDrawer.classList.remove('open'); historyOverlay.classList.add('hidden'); }
+    function updateStatus(msg) { if (statusLog) statusLog.innerText = msg || ''; }
 
-  function openHistoryDrawer() {
-    historyDrawer.classList.add('open');
-    historyOverlay.classList.remove('hidden');
-  }
+    function toggleFavorite(id) {
+      promptHistory = promptHistory.map(item => item.id === id ? { ...item, favorite: !item.favorite } : item);
+      saveHistory();
+      renderHistory();
+    }
 
-  function closeHistoryDrawer() {
-    historyDrawer.classList.remove('open');
-    historyOverlay.classList.add('hidden');
-  }
+    function deleteHistoryItem(id) {
+      promptHistory = promptHistory.filter(item => item.id !== id);
+      saveHistory();
+      renderHistory();
+    }
 
-  function toggleFavorite(id) {
-    promptHistory = promptHistory.map(item => item.id === id ? { ...item, favorite: !item.favorite } : item);
-    saveHistory();
-    renderHistory();
-  }
+    function exportSingleItem(id, type) {
+      const item = promptHistory.find(x => x.id === id);
+      if (!item) return;
+      const content = type === 'json'
+        ? JSON.stringify(item, null, 2)
+        : [
+            `Title: ${item.title || 'Prompt'}`,
+            `Mode: ${item.mode || 'learner'}`,
+            `Subject: ${item.subject || ''}`,
+            `Action: ${item.action || ''}`,
+            `Environment: ${item.environment || ''}`,
+            `Style: ${item.style || ''}`,
+            `Lighting: ${item.lighting || ''}`,
+            `Composition: ${item.composition || ''}`,
+            `Aspect Ratio: ${item.aspectRatio || 'N/R'}`,
+            `Negatives: ${item.negatives || ''}`,
+            `Prompt: ${item.promptText || ''}`
+          ].join('\n');
+      const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = type === 'json' ? `${item.title || 'prompt'}.json` : `${item.title || 'prompt'}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
 
-  function deleteHistoryItem(id) {
-    promptHistory = promptHistory.filter(item => item.id !== id);
-    saveHistory();
-    renderHistory();
-  }
+    function loadPromptFromHistory(item) {
+      if (!item) return;
+      if (item.mode === 'expert') {
+        if (document.getElementById('expertMode')?.classList.contains('hidden')) toggleModeBtn.click();
+        expertPromptTextarea.value = item.promptText || '';
+      } else {
+        if (document.getElementById('learnerMode')?.classList.contains('hidden')) toggleModeBtn.click();
+        const setValue = (id, value) => { const el = document.getElementById(id); if (el) el.value = value || ''; };
+        setValue('subject', item.subject);
+        setValue('action', item.action);
+        setValue('environment', item.environment);
+        setValue('style', item.style);
+        setValue('lighting', item.lighting);
+        setValue('composition', item.composition);
+        setValue('aspectRatio', item.aspectRatio);
+        setValue('customNegative', item.negatives);
+      }
+      updateStatus('Prompt cargado desde historial');
+      openHistoryDrawer();
+    }
 
-  function exportSingleItem(id, type) {
-    const item = promptHistory.find(x => x.id === id);
-    if (!item) return;
+    function duplicateHistoryItem(id) {
+      const item = promptHistory.find(x => x.id === id);
+      if (!item) return;
+      const duplicated = { ...item, id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), createdAt: new Date().toISOString(), title: `${item.title || 'Prompt'} (Copia)`, favorite: false };
+      promptHistory.unshift(duplicated);
+      promptHistory = promptHistory.slice(0, 20);
+      saveHistory();
+      renderHistory();
+      loadPromptFromHistory(duplicated);
+    }
 
-    const content = type === 'json'
-      ? JSON.stringify(item, null, 2)
-      : [
-          `Title: ${item.title || 'Prompt'}`,
-          `Mode: ${item.mode || 'learner'}`,
-          `Subject: ${item.subject || ''}`,
-          `Action: ${item.action || ''}`,
-          `Environment: ${item.environment || ''}`,
-          `Style: ${item.style || ''}`,
-          `Lighting: ${item.lighting || ''}`,
-          `Composition: ${item.composition || ''}`,
-          `Aspect Ratio: ${item.aspectRatio || 'N/R'}`,
-          `Negatives: ${item.negatives || ''}`,
-          `Prompt: ${item.promptText || ''}`
-        ].join('\n');
-
-    const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = type === 'json' ? `${item.title || 'prompt'}.json` : `${item.title || 'prompt'}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  function loadPromptFromHistory(item) {
-    if (!item) return;
-
-    if (item.mode === 'expert') {
-      if (document.getElementById('expertMode')?.classList.contains('hidden')) toggleModeBtn.click();
-      expertPromptTextarea.value = item.promptText || '';
-    } else {
-      if (document.getElementById('learnerMode')?.classList.contains('hidden')) toggleModeBtn.click();
-
-      const setValue = (id, value) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.value = value || '';
+    function recreateVariant(item) {
+      if (!item) return;
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      const variantMaps = {
+        style: ["cinematic photorealistic, 8k, movie still, highly detailed","studio ghibli style, whimsical, hand-drawn anime","digital art illustration, trending on artstation, masterpiece","cyberpunk aesthetic, synthwave neon, futuristic","classic oil painting, textured canvas, museum quality","unreal engine 5, octane render, 3d volumetric"],
+        lighting: ["dramatic rim lighting, high contrast, moody","soft volumetric sunlight, ethereal glow","neon cyberpunk night, hazy fog, glowing accents","golden hour rays, warm hazy light","professional studio lighting, softbox","bioluminescent glow, mystical light"],
+        composition: ["wide shot, epic cinematic scale, landscape","extreme close up portrait, macro detail","low angle, heroic perspective, grand scale","symmetrical centered composition, balanced","top down perspective, aerial drone view"]
       };
 
-      setValue('subject', item.subject);
-      setValue('action', item.action);
-      setValue('environment', item.environment);
-      setValue('style', item.style);
-      setValue('lighting', item.lighting);
-      setValue('composition', item.composition);
-      setValue('aspectRatio', item.aspectRatio);
-      setValue('customNegative', item.negatives);
-    }
-
-    updateStatus('Prompt cargado desde historial');
-    openHistoryDrawer();
-  }
-
-  function duplicateHistoryItem(id) {
-    const item = promptHistory.find(x => x.id === id);
-    if (!item) return;
-
-    const duplicated = {
-      ...item,
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      createdAt: new Date().toISOString(),
-      title: `${item.title || 'Prompt'} (Copia)`,
-      favorite: false
-    };
-
-    promptHistory.unshift(duplicated);
-    promptHistory = promptHistory.slice(0, 20);
-    saveHistory();
-    renderHistory();
-    loadPromptFromHistory(duplicated);
-  }
-
-  function recreateVariant(item) {
-    if (!item) return;
-
-    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-    const variantMaps = {
-      style: [
-        "cinematic photorealistic, 8k, movie still, highly detailed",
-        "studio ghibli style, whimsical, hand-drawn anime",
-        "digital art illustration, trending on artstation, masterpiece",
-        "cyberpunk aesthetic, synthwave neon, futuristic",
-        "classic oil painting, textured canvas, museum quality",
-        "unreal engine 5, octane render, 3d volumetric"
-      ],
-      lighting: [
-        "dramatic rim lighting, high contrast, moody",
-        "soft volumetric sunlight, ethereal glow",
-        "neon cyberpunk night, hazy fog, glowing accents",
-        "golden hour rays, warm hazy light",
-        "professional studio lighting, softbox",
-        "bioluminescent glow, mystical light"
-      ],
-      composition: [
-        "wide shot, epic cinematic scale, landscape",
-        "extreme close up portrait, macro detail",
-        "low angle, heroic perspective, grand scale",
-        "symmetrical centered composition, balanced",
-        "top down perspective, aerial drone view"
-      ]
-    };
-
-    const base = { ...item };
-
-    if ((base.mode || 'learner') === 'learner') {
-      const currentStyle = base.style || '';
-      const currentLighting = base.lighting || '';
-      const currentComposition = base.composition || '';
-
-      const stylePool = variantMaps.style.filter(x => x !== currentStyle);
-      const lightingPool = variantMaps.lighting.filter(x => x !== currentLighting);
-      const compositionPool = variantMaps.composition.filter(x => x !== currentComposition);
-
-      base.style = stylePool.length ? pick(stylePool) : currentStyle;
-      base.lighting = lightingPool.length ? pick(lightingPool) : currentLighting;
-      base.composition = compositionPool.length ? pick(compositionPool) : currentComposition;
-
-      base.promptText = [
-        `subject: ${base.subject || ''}`,
-        `action: ${base.action || ''}`,
-        `environment: ${base.environment || ''}`,
-        `style: ${base.style || ''}`,
-        `lighting: ${base.lighting || ''}`,
-        `composition: ${base.composition || ''}`,
-        `aspectRatio: ${base.aspectRatio || 'N/R'}`
-      ].join(', ');
-    } else {
-      base.promptText = (base.promptText || '')
-        .replace(/Camera:[^\n]*/i, 'Camera: more cinematic angle')
-        .replace(/Lighting:[^\n]*/i, 'Lighting: more dramatic lighting')
-        .replace(/Mood:[^\n]*/i, 'Mood: more intense and atmospheric');
-    }
-
-    const variant = {
-      ...base,
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      createdAt: new Date().toISOString(),
-      title: `${base.title || 'Prompt'} (Variante)`,
-      favorite: false
-    };
-
-    promptHistory.unshift(variant);
-    promptHistory = promptHistory.slice(0, 20);
-    saveHistory();
-    renderHistory();
-    loadPromptFromHistory(variant);
-  }
-
-  function renderHistory() {
-    if (!historyList) return;
-
-    if (!promptHistory.length) {
-      historyList.innerHTML = `
-        <div class="text-center text-slate-500 text-sm py-10 border border-dashed border-white/10 rounded-2xl">
-          Aún no hay prompts guardados.
-        </div>
-      `;
-      return;
-    }
-
-    historyList.innerHTML = promptHistory.map(item => {
-      const date = new Date(item.createdAt);
-      const timeLabel = isNaN(date.getTime()) ? '' : date.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
-
-      return `
-        <article class="history-card ${item.favorite ? 'border-yellow-400/40' : ''}">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="history-title truncate">${item.title || 'Prompt sin título'}</div>
-              <div class="history-meta mt-1">${item.mode || 'learner'} · ${item.aspectRatio || 'N/R'} · ${timeLabel}</div>
-            </div>
-            <button class="text-yellow-400 text-lg" onclick="toggleFavorite('${item.id}')">
-              ${item.favorite ? '★' : '☆'}
-            </button>
-          </div>
-
-          <p class="text-slate-300 text-xs mt-3 leading-5 whitespace-pre-wrap">${item.promptText || ''}</p>
-
-          <div class="history-actions">
-            <button class="history-action-btn bg-blue-500/15 text-blue-200 border-blue-400/20" onclick="loadHistoryItem('${item.id}')">Cargar</button>
-            <button class="history-action-btn bg-cyan-500/15 text-cyan-200 border-cyan-400/20" onclick="duplicateHistoryItem('${item.id}')">Duplicar</button>
-            <button class="history-action-btn bg-violet-500/15 text-violet-200 border-violet-400/20" onclick="variantHistoryItem('${item.id}')">Variante</button>
-            <button class="history-action-btn bg-emerald-500/15 text-emerald-200 border-emerald-400/20" onclick="exportSingleItem('${item.id}', 'json')">JSON</button>
-            <button class="history-action-btn bg-amber-500/15 text-amber-200 border-amber-400/20" onclick="exportSingleItem('${item.id}', 'txt')">TXT</button>
-            <button class="history-action-btn bg-rose-500/15 text-rose-200 border-rose-400/20" onclick="deleteHistoryItem('${item.id}')">Borrar</button>
-          </div>
-        </article>
-      `;
-    }).join('');
-  }
-
-  function loadHistoryItem(id) {
-    const item = promptHistory.find(x => x.id === id);
-    if (!item) return;
-    loadPromptFromHistory(item);
-  }
-
-  function variantHistoryItem(id) {
-    const item = promptHistory.find(x => x.id === id);
-    if (!item) return;
-    recreateVariant(item);
-  }
-
-  function exportAllHistory(type) {
-    const content = type === 'json'
-      ? JSON.stringify(promptHistory, null, 2)
-      : promptHistory.map(i => [
-          `Title: ${i.title || 'Prompt'}`,
-          `Mode: ${i.mode || 'learner'}`,
-          `Subject: ${i.subject || ''}`,
-          `Action: ${i.action || ''}`,
-          `Environment: ${i.environment || ''}`,
-          `Style: ${i.style || ''}`,
-          `Lighting: ${i.lighting || ''}`,
-          `Composition: ${i.composition || ''}`,
-          `Aspect Ratio: ${i.aspectRatio || 'N/R'}`,
-          `Negatives: ${i.negatives || ''}`,
-          `Prompt: ${i.promptText || ''}`
-        ].join('\n')).join('\n\n---\n\n');
-
-    const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = type === 'json' ? 'directprompt-history.json' : 'directprompt-history.txt';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  function safeCopy(elementId, button) {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-    const text = el.innerText;
-    const originalText = button.innerText;
-    button.innerText = 'OK!';
-    button.style.color = '#4ade80';
-
-    const temp = document.createElement('textarea');
-    temp.value = text;
-    temp.style.position = 'fixed';
-    temp.style.left = '-9999px';
-    document.body.appendChild(temp);
-    temp.select();
-    document.execCommand('copy');
-    document.body.removeChild(temp);
-
-    setTimeout(() => {
-      button.innerText = originalText;
-      button.style.color = '';
-    }, 1500);
-  }
-
-  function safeSetText(id, text) {
-    const el = document.getElementById(id);
-    if (el) el.innerText = text || '';
-  }
-
-  function updateStatus(msg) {
-    if (statusLog) statusLog.innerText = msg || '';
-  }
-
-  async function fetchWithFallback(promptText, negatives) {
-    updateStatus('Invocando al cerebro neuronal...');
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ promptText, negatives })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      console.error(data);
-      throw new Error(data?.error || 'Sin conexión');
-    }
-    updateStatus('Protocolo generado con éxito');
-    return data;
-  }
-
-  clearBtn.addEventListener('click', () => {
-    ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio', 'customNegative'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.value = '';
-      if (el.tagName === 'SELECT') el.selectedIndex = 0;
-    });
-
-    expertPromptTextarea.value = '';
-    negativeValues.clear();
-
-    document.querySelectorAll('[data-value]').forEach(tag => {
-      tag.classList.remove('bg-rose-900', 'text-rose-300');
-      tag.classList.add('bg-slate-900/60', 'text-gray-400');
-    });
-
-    resultsSection.classList.add('hidden');
-    updateStatus('Dashboard reseteado');
-    setTimeout(() => updateStatus(''), 1500);
-  });
-
-  randomBtn.addEventListener('click', () => {
-    if (isExpertMode) toggleModeBtn.click();
-    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-
-    document.getElementById('subject').value = pick(RANDOMDATA.subjects);
-    document.getElementById('action').value = pick(RANDOMDATA.actions);
-    document.getElementById('environment').value = pick(RANDOMDATA.environments);
-
-    const sets = [
-      { id: 'style', data: RANDOMDATA.styles },
-      { id: 'lighting', data: RANDOMDATA.lightings },
-      { id: 'composition', data: RANDOMDATA.compositions },
-      { id: 'aspectRatio', data: RANDOMDATA.ratios }
-    ];
-
-    sets.forEach(set => {
-      const el = document.getElementById(set.id);
-      const randomValue = pick(set.data);
-      for (let i = 0; i < el.options.length; i++) {
-        if (el.options[i].value === randomValue) {
-          el.selectedIndex = i;
-          break;
-        }
-      }
-    });
-
-    updateStatus('Director creativo activado');
-    setTimeout(() => updateStatus(''), 1500);
-  });
-
-  document.querySelectorAll('[data-value]').forEach(tag => {
-    tag.addEventListener('click', () => {
-      const value = tag.dataset.value;
-      if (negativeValues.has(value)) {
-        negativeValues.delete(value);
-        tag.classList.remove('bg-rose-900', 'text-rose-300');
-        tag.classList.add('bg-slate-900/60', 'text-gray-400');
+      const base = { ...item };
+      if ((base.mode || 'learner') === 'learner') {
+        const currentStyle = base.style || '';
+        const currentLighting = base.lighting || '';
+        const currentComposition = base.composition || '';
+        const stylePool = variantMaps.style.filter(x => x !== currentStyle);
+        const lightingPool = variantMaps.lighting.filter(x => x !== currentLighting);
+        const compositionPool = variantMaps.composition.filter(x => x !== currentComposition);
+        base.style = stylePool.length ? pick(stylePool) : currentStyle;
+        base.lighting = lightingPool.length ? pick(lightingPool) : currentLighting;
+        base.composition = compositionPool.length ? pick(compositionPool) : currentComposition;
+        base.promptText = [
+          `subject: ${base.subject || ''}`,
+          `action: ${base.action || ''}`,
+          `environment: ${base.environment || ''}`,
+          `style: ${base.style || ''}`,
+          `lighting: ${base.lighting || ''}`,
+          `composition: ${base.composition || ''}`,
+          `aspectRatio: ${base.aspectRatio || 'N/R'}`
+        ].join(', ');
       } else {
-        negativeValues.add(value);
-        tag.classList.remove('bg-slate-900/60', 'text-gray-400');
-        tag.classList.add('bg-rose-900', 'text-rose-300');
+        base.promptText = (base.promptText || '')
+          .replace(/Camera:[^\n]*/i, 'Camera: more cinematic angle')
+          .replace(/Lighting:[^\n]*/i, 'Lighting: more dramatic lighting')
+          .replace(/Mood:[^\n]*/i, 'Mood: more intense and atmospheric');
       }
-    });
-  });
-
-  toggleModeBtn.addEventListener('click', () => {
-    isExpertMode = !isExpertMode;
-    learnerModeDiv.classList.toggle('hidden');
-    expertModeDiv.classList.toggle('hidden');
-    toggleModeBtn.textContent = isExpertMode ? 'MODO APRENDIZ ✨' : 'MODO EXPERTO ⚡';
-  });
-
-  generateBtn.addEventListener('click', async () => {
-    let promptText = '';
-    const negatives = [
-      ...negativeValues,
-      document.getElementById('customNegative').value
-    ].filter(Boolean).join(', ');
-
-    const inputsDisplay = [];
-
-    if (isExpertMode) {
-      promptText = expertPromptTextarea.value.trim();
-      if (!promptText) {
-        alert('Escribe algo maestro.');
-        return;
-      }
-    } else {
-      const ids = ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio'];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        const val = el ? el.value.trim() : '';
-        if (val) inputsDisplay.push({ key: id, val });
-      });
-
-      promptText = inputsDisplay.map(i => `${i.key}: ${i.val}`).join(', ');
-
-      if (!promptText) {
-        alert('Llena campos.');
-        return;
-      }
+      const variant = { ...base, id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), createdAt: new Date().toISOString(), title: `${base.title || 'Prompt'} (Variante)`, favorite: false };
+      promptHistory.unshift(variant);
+      promptHistory = promptHistory.slice(0, 20);
+      saveHistory();
+      renderHistory();
+      loadPromptFromHistory(variant);
     }
 
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = 'LO BUENO DEMORA UN POCO... <span class="loading-dots"></span>';
-    generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    resultsSection.classList.add('hidden');
+    function renderHistory() {
+      if (!historyList) return;
+      if (!promptHistory.length) {
+        historyList.innerHTML = `<div class="text-center text-slate-500 text-sm py-10 border border-dashed border-white/10 rounded-2xl">Aún no hay prompts guardados.</div>`;
+        return;
+      }
+      historyList.innerHTML = promptHistory.map(item => {
+        const date = new Date(item.createdAt);
+        const timeLabel = isNaN(date.getTime()) ? '' : date.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+        return `
+          <article class="history-card ${item.favorite ? 'border-yellow-400/40' : ''}">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="history-title truncate">${item.title || 'Prompt sin título'}</div>
+                <div class="history-meta mt-1">${item.mode || 'learner'} · ${item.aspectRatio || 'N/R'} · ${timeLabel}</div>
+              </div>
+              <button class="text-yellow-400 text-lg" onclick="toggleFavorite('${item.id}')">${item.favorite ? '★' : '☆'}</button>
+            </div>
+            <p class="text-slate-300 text-xs mt-3 leading-5 whitespace-pre-wrap">${item.promptText || ''}</p>
+            <div class="history-actions">
+              <button class="history-action-btn bg-blue-500/15 text-blue-200 border-blue-400/20" onclick="loadHistoryItem('${item.id}')">Cargar</button>
+              <button class="history-action-btn bg-cyan-500/15 text-cyan-200 border-cyan-400/20" onclick="duplicateHistoryItem('${item.id}')">Duplicar</button>
+              <button class="history-action-btn bg-violet-500/15 text-violet-200 border-violet-400/20" onclick="variantHistoryItem('${item.id}')">Variante</button>
+              <button class="history-action-btn bg-emerald-500/15 text-emerald-200 border-emerald-400/20" onclick="exportSingleItem('${item.id}', 'json')">JSON</button>
+              <button class="history-action-btn bg-amber-500/15 text-amber-200 border-amber-400/20" onclick="exportSingleItem('${item.id}', 'txt')">TXT</button>
+              <button class="history-action-btn bg-rose-500/15 text-rose-200 border-rose-400/20" onclick="deleteHistoryItem('${item.id}')">Borrar</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
 
-    try {
-      const data = await fetchWithFallback(promptText, negatives);
-      const json = data;
+    function loadHistoryItem(id) {
+      const item = promptHistory.find(x => x.id === id);
+      if (!item) return;
+      loadPromptFromHistory(item);
+    }
 
-      console.log('JSON RECIBIDO DEL BACKEND:', json);
+    function variantHistoryItem(id) {
+      const item = promptHistory.find(x => x.id === id);
+      if (!item) return;
+      recreateVariant(item);
+    }
 
-      safeSetText('mjPromptes', json.midjourneyes || '');
-      safeSetText('mjPrompten', json.midjourneyen || '');
-      safeSetText('dallePromptes', json.dallees || '');
-      safeSetText('dallePrompten', json.dalleen || '');
-      safeSetText('sdPositivePrompten', json.sdpositiveen || '');
-      safeSetText('sdNegativePrompten', json.sdnegativeen || '');
-      safeSetText('geminiPrompten', json.geminiimageen || '');
+    function exportAllHistory(type) {
+      const content = type === 'json'
+        ? JSON.stringify(promptHistory, null, 2)
+        : promptHistory.map(i => [
+            `Title: ${i.title || 'Prompt'}`,
+            `Mode: ${i.mode || 'learner'}`,
+            `Subject: ${i.subject || ''}`,
+            `Action: ${i.action || ''}`,
+            `Environment: ${i.environment || ''}`,
+            `Style: ${i.style || ''}`,
+            `Lighting: ${i.lighting || ''}`,
+            `Composition: ${i.composition || ''}`,
+            `Aspect Ratio: ${i.aspectRatio || 'N/R'}`,
+            `Negatives: ${i.negatives || ''}`,
+            `Prompt: ${i.promptText || ''}`
+          ].join('\n')).join('\n\n---\n\n');
 
-      const profileToShow = json.jsoncontextprofile || json;
-      safeSetText('fullJsonOutput', JSON.stringify(profileToShow, null, 2));
+      const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = type === 'json' ? 'directprompt-history.json' : 'directprompt-history.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function safeCopy(elementId, button) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText;
+      const originalText = button.innerText;
+      button.innerText = 'OK!';
+      button.style.color = '#4ade80';
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      setTimeout(() => {
+        button.innerText = originalText;
+        button.style.color = '';
+      }, 1500);
+    }
+
+    function safeSetText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text || '';
+    }
+
+    function normalizeKeys(json) {
+      return {
+        mjes: json.midjourneyes || json.midjourney_es || json.midjourneyES || json.midjourney || '',
+        mjen: json.midjourneyen || json.midjourney_en || json.midjourneyEN || '',
+        dallees: json.dallees || json.dalle_es || json.dalleES || json.dalle || '',
+        dalleen: json.dalleen || json.dalle_en || json.dalleEN || '',
+        sdpos: json.sdpositiveen || json.sd_positive_en || json.sdPositiveEn || json.sdpositive || '',
+        sdneg: json.sdnegativeen || json.sd_negative_en || json.sdNegativeEn || json.sdnegative || '',
+        gemini: json.geminiimageen || json.gemini_image_en || json.geminiImageEn || json.geminiimage || '',
+        profile: json.jsoncontextprofile || json.json_context_profile || json.contextProfile || json.profile || json
+      };
+    }
+
+    function updateResultsFromJson(json, promptText, inputsDisplay, isExpertModeFlag) {
+      const normalized = normalizeKeys(json);
+
+      safeSetText('mjPromptes', normalized.mjes);
+      safeSetText('mjPrompten', normalized.mjen);
+      safeSetText('dallePromptes', normalized.dallees);
+      safeSetText('dallePrompten', normalized.dalleen);
+      safeSetText('sdPositivePrompten', normalized.sdpos);
+      safeSetText('sdNegativePrompten', normalized.sdneg);
+      safeSetText('geminiPrompten', normalized.gemini);
+      safeSetText('fullJsonOutput', JSON.stringify(normalized.profile, null, 2));
 
       const anatomy = document.getElementById('anatomyContainer');
-      if (isExpertMode) {
+      if (isExpertModeFlag) {
         anatomy.innerHTML = `<div class="italic text-slate-400">${promptText}</div>`;
       } else {
         anatomy.innerHTML = inputsDisplay.map(i => `
@@ -920,52 +641,172 @@
           </div>
         `).join('');
       }
-
-      const historyItem = {
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        createdAt: new Date().toISOString(),
-        title: (promptText || 'Prompt').slice(0, 42),
-        mode: isExpertMode ? 'expert' : 'learner',
-        promptText,
-        negatives,
-        subject: document.getElementById('subject')?.value || '',
-        action: document.getElementById('action')?.value || '',
-        environment: document.getElementById('environment')?.value || '',
-        style: document.getElementById('style')?.value || '',
-        lighting: document.getElementById('lighting')?.value || '',
-        composition: document.getElementById('composition')?.value || '',
-        aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
-        output: json,
-        favorite: false
-      };
-
-      promptHistory.unshift(historyItem);
-      promptHistory = promptHistory.slice(0, 20);
-      saveHistory();
-      renderHistory();
-
-      resultsSection.classList.remove('hidden');
-      setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth' }), 150);
-    } catch (err) {
-      console.error(err);
-      updateStatus('Error');
-      alert('Hubo un problema de conexión.');
-    } finally {
-      generateBtn.disabled = false;
-      generateBtn.innerHTML = '✨ DIRIGIR ESCENA ✨';
-      generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     }
-  });
 
-  historyToggleBtn.addEventListener('click', () => {
-    historyDrawer.classList.contains('open') ? closeHistoryDrawer() : openHistoryDrawer();
-  });
-  historyCloseBtn.addEventListener('click', closeHistoryDrawer);
-  historyOverlay.addEventListener('click', closeHistoryDrawer);
-  exportHistoryTxtBtn.addEventListener('click', () => exportAllHistory('txt'));
-  exportHistoryJsonBtn.addEventListener('click', () => exportAllHistory('json'));
+    async function fetchWithFallback(promptText, negatives) {
+      updateStatus('Invocando al cerebro neuronal...');
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promptText, negatives })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        console.error(data);
+        throw new Error(data?.error || 'Sin conexión');
+      }
+      updateStatus('Protocolo generado con éxito');
+      return data;
+    }
 
-  renderHistory();
-</script>
+    clearBtn.addEventListener('click', () => {
+      ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio', 'customNegative'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = '';
+        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      });
+      expertPromptTextarea.value = '';
+      negativeValues.clear();
+      document.querySelectorAll('[data-value]').forEach(tag => {
+        tag.classList.remove('bg-rose-900', 'text-rose-300');
+        tag.classList.add('bg-slate-900/60', 'text-gray-400');
+      });
+      resultsSection.classList.add('hidden');
+      updateStatus('Dashboard reseteado');
+      setTimeout(() => updateStatus(''), 1500);
+    });
+
+    randomBtn.addEventListener('click', () => {
+      if (isExpertMode) toggleModeBtn.click();
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      document.getElementById('subject').value = pick(RANDOMDATA.subjects);
+      document.getElementById('action').value = pick(RANDOMDATA.actions);
+      document.getElementById('environment').value = pick(RANDOMDATA.environments);
+
+      [
+        { id: 'style', data: RANDOMDATA.styles },
+        { id: 'lighting', data: RANDOMDATA.lightings },
+        { id: 'composition', data: RANDOMDATA.compositions },
+        { id: 'aspectRatio', data: RANDOMDATA.ratios }
+      ].forEach(set => {
+        const el = document.getElementById(set.id);
+        const randomValue = pick(set.data);
+        for (let i = 0; i < el.options.length; i++) {
+          if (el.options[i].value === randomValue) {
+            el.selectedIndex = i;
+            break;
+          }
+        }
+      });
+
+      updateStatus('Director creativo activado');
+      setTimeout(() => updateStatus(''), 1500);
+    });
+
+    document.querySelectorAll('[data-value]').forEach(tag => {
+      tag.addEventListener('click', () => {
+        const value = tag.dataset.value;
+        if (negativeValues.has(value)) {
+          negativeValues.delete(value);
+          tag.classList.remove('bg-rose-900', 'text-rose-300');
+          tag.classList.add('bg-slate-900/60', 'text-gray-400');
+        } else {
+          negativeValues.add(value);
+          tag.classList.remove('bg-slate-900/60', 'text-gray-400');
+          tag.classList.add('bg-rose-900', 'text-rose-300');
+        }
+      });
+    });
+
+    toggleModeBtn.addEventListener('click', () => {
+      isExpertMode = !isExpertMode;
+      learnerModeDiv.classList.toggle('hidden');
+      expertModeDiv.classList.toggle('hidden');
+      toggleModeBtn.textContent = isExpertMode ? 'MODO APRENDIZ ✨' : 'MODO EXPERTO ⚡';
+    });
+
+    generateBtn.addEventListener('click', async () => {
+      let promptText = '';
+      const negatives = [...negativeValues, document.getElementById('customNegative').value].filter(Boolean).join(', ');
+      const inputsDisplay = [];
+
+      if (isExpertMode) {
+        promptText = expertPromptTextarea.value.trim();
+        if (!promptText) {
+          alert('Escribe algo maestro.');
+          return;
+        }
+      } else {
+        const ids = ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio'];
+        ids.forEach(id => {
+          const el = document.getElementById(id);
+          const val = el ? el.value.trim() : '';
+          if (val) inputsDisplay.push({ key: id, val });
+        });
+        promptText = inputsDisplay.map(i => `${i.key}: ${i.val}`).join(', ');
+        if (!promptText) {
+          alert('Llena campos.');
+          return;
+        }
+      }
+
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = 'LO BUENO DEMORA UN POCO... <span class="loading-dots"></span>';
+      generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      resultsSection.classList.add('hidden');
+
+      try {
+        const data = await fetchWithFallback(promptText, negatives);
+        console.log('JSON RECIBIDO DEL BACKEND:', data);
+
+        updateResultsFromJson(data, promptText, inputsDisplay, isExpertMode);
+
+        const historyItem = {
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          createdAt: new Date().toISOString(),
+          title: (promptText || 'Prompt').slice(0, 42),
+          mode: isExpertMode ? 'expert' : 'learner',
+          promptText,
+          negatives,
+          subject: document.getElementById('subject')?.value || '',
+          action: document.getElementById('action')?.value || '',
+          environment: document.getElementById('environment')?.value || '',
+          style: document.getElementById('style')?.value || '',
+          lighting: document.getElementById('lighting')?.value || '',
+          composition: document.getElementById('composition')?.value || '',
+          aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
+          output: data,
+          favorite: false
+        };
+
+        promptHistory.unshift(historyItem);
+        promptHistory = promptHistory.slice(0, 20);
+        saveHistory();
+        renderHistory();
+
+        resultsSection.classList.remove('hidden');
+        setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth' }), 150);
+      } catch (err) {
+        console.error(err);
+        updateStatus('Error');
+        alert('Hubo un problema de conexión.');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '✨ DIRIGIR ESCENA ✨';
+        generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    });
+
+    historyToggleBtn.addEventListener('click', () => {
+      historyDrawer.classList.contains('open') ? closeHistoryDrawer() : openHistoryDrawer();
+    });
+    historyCloseBtn.addEventListener('click', closeHistoryDrawer);
+    historyOverlay.addEventListener('click', closeHistoryDrawer);
+    exportHistoryTxtBtn.addEventListener('click', () => exportAllHistory('txt'));
+    exportHistoryJsonBtn.addEventListener('click', () => exportAllHistory('json'));
+
+    renderHistory();
+  </script>
 </body>
 </html>
