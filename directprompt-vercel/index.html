@@ -535,7 +535,7 @@
       loadPromptFromHistory(duplicated);
     }
 
-  function recreateVariant(item) {
+ function recreateVariant(item) {
   if (!item) return;
 
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -567,20 +567,19 @@
   };
 
   const base = { ...item };
-  const mode = base.mode || 'learner';
 
-  if (mode === 'learner') {
+  if ((base.mode || 'learner') === 'learner') {
     const currentStyle = base.style || '';
     const currentLighting = base.lighting || '';
     const currentComposition = base.composition || '';
 
-    let newStyle = pick(variantMaps.style.filter(x => x !== currentStyle));
-    let newLighting = pick(variantMaps.lighting.filter(x => x !== currentLighting));
-    let newComposition = pick(variantMaps.composition.filter(x => x !== currentComposition));
+    const stylePool = variantMaps.style.filter(x => x !== currentStyle);
+    const lightingPool = variantMaps.lighting.filter(x => x !== currentLighting);
+    const compositionPool = variantMaps.composition.filter(x => x !== currentComposition);
 
-    base.style = newStyle || currentStyle;
-    base.lighting = newLighting || currentLighting;
-    base.composition = newComposition || currentComposition;
+    base.style = stylePool.length ? pick(stylePool) : currentStyle;
+    base.lighting = lightingPool.length ? pick(lightingPool) : currentLighting;
+    base.composition = compositionPool.length ? pick(compositionPool) : currentComposition;
 
     base.promptText = [
       `subject: ${base.subject || ''}`,
@@ -591,13 +590,11 @@
       `composition: ${base.composition || ''}`,
       `aspectRatio: ${base.aspectRatio || 'N/R'}`
     ].join(', ');
-  }
-
-  if (mode === 'expert') {
+  } else {
     base.promptText = (base.promptText || '')
-      .replace(/camera:[^\n]*/i, 'camera: more cinematic angle')
-      .replace(/lighting:[^\n]*/i, 'lighting: more dramatic lighting')
-      .replace(/mood:[^\n]*/i, 'mood: more intense and atmospheric');
+      .replace(/Camera:[^\n]*/i, 'Camera: more cinematic angle')
+      .replace(/Lighting:[^\n]*/i, 'Lighting: more dramatic lighting')
+      .replace(/Mood:[^\n]*/i, 'Mood: more intense and atmospheric');
   }
 
   const variant = {
