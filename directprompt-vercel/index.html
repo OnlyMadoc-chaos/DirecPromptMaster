@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DirecPrompt Master - Crabtive Lab Protocol 3.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600&family=Luckiest+Guy&display=swap" rel="stylesheet">
+    
+    <style>
+        .font-lucky { font-family: 'Luckiest Guy', cursive; letter-spacing: 2px; }
+        .font-fredoka { font-family: 'Fredoka', sans-serif; }
+
+        body {
+            background-color: #0c0c0c;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(339,49%,15%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(225,39%,15%,1) 0, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(253,16%,10%,1) 0, transparent 50%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-pop {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0f172a;
+            border-bottom: 5px solid #92400e;
+            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-pop:active { transform: translateY(3px); border-bottom: 0px; margin-top: 5px; }
+        .btn-pop:hover { filter: brightness(1.1); transform: scale(1.01); }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fbbf24;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .copy-btn:hover { background: #fbbf24; color: #0f172a; }
+
+        .loading-dots:after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: 1; } }
+        
+        .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        select option { background-color: #0f172a; color: white; }
+        .input-focus:focus { border-color: #fbbf24; box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1); }
+    </style>
+</head>
+<body class="p-4 md:p-8 font-fredoka antialiased">
+    <div class="max-w-7xl mx-auto">
+        
+        <header class="text-center mb-12 fade-in">
+            <h1 class="font-lucky text-5xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-amber-500 drop-shadow-2xl leading-none">
+                DIRECPROMPT MASTER
+            </h1>
+            <p class="text-blue-300 text-sm md:text-xl font-semibold uppercase tracking-[0.4em] opacity-90 mt-2">
+                Sistema Maestro de Dirección Visual
+            </p>
+        </header>
+
+        <main class="lg:grid lg:grid-cols-2 lg:gap-14 space-y-10 lg:space-y-0">
+            
+            <div class="lg:col-span-1 space-y-8 fade-in">
+                
+                <div class="flex flex-wrap justify-between items-center gap-4 px-2">
+                    <button id="toggleModeBtn" class="glass-panel text-blue-200 font-bold py-3 px-8 rounded-2xl border border-white/10 transition-all text-xs uppercase hover:bg-white/5 shadow-xl">
+                        MODO EXPERTO ⚡
+                    </button>
+                    
+                    <div class="flex gap-3">
+                        <button id="randomBtn" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 font-bold py-3 px-6 rounded-2xl text-xs uppercase transition-all flex items-center gap-2 shadow-lg">
+                            <span>🎲</span> INSPIRACIÓN
+                        </button>
+                        <button id="clearBtn" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 font-bold py-3 px-6 rounded-2xl text-xs uppercase transition-all shadow-lg">
+                            🗑️ LIMPIAR
+                        </button>
+                    </div>
+                </div>
+
+                <div id="learnerMode" class="fade-in">
+                    <section class="glass-panel rounded-[3rem] p-6 md:p-10 border border-white/5 shadow-2xl">
+                        <div class="space-y-8">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="text-yellow-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Sujeto / Protagonista</label>
+                                    <input type="text" id="subject" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus transition-all text-sm shadow-inner" placeholder="Ej: Una deidad mecánica de latón">
+                                </div>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="text-yellow-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Acción</label>
+                                        <input type="text" id="action" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus transition-all text-sm shadow-inner" placeholder="Ej: reparando el tiempo">
+                                    </div>
+                                    <div>
+                                        <label class="text-yellow-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Entorno</label>
+                                        <input type="text" id="environment" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus transition-all text-sm shadow-inner" placeholder="Ej: en el vacío estelar">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-blue-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Estilo Artístico</label>
+                                    <select id="style" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus text-sm transition-all">
+                                        <option value="">Cualquiera</option>
+                                        <option value="cinematic photorealistic, 8k, movie still, highly detailed">Cine Realista</option>
+                                        <option value="studio ghibli style, whimsical, hand-drawn anime">Anime / Ghibli</option>
+                                        <option value="digital art illustration, trending on artstation, masterpiece">Arte Digital</option>
+                                        <option value="cyberpunk aesthetic, synthwave neon, futuristic">Cyberpunk</option>
+                                        <option value="classic oil painting, textured canvas, museum quality">Pintura al Óleo</option>
+                                        <option value="unreal engine 5, octane render, 3d volumetric">Render 3D</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-blue-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Iluminación</label>
+                                    <select id="lighting" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus text-sm transition-all">
+                                        <option value="">Cualquiera</option>
+                                        <option value="dramatic rim lighting, high contrast, moody">Dramática</option>
+                                        <option value="soft volumetric sunlight, ethereal glow">Natural Suave</option>
+                                        <option value="neon cyberpunk night, hazy fog, glowing accents">Neón y Niebla</option>
+                                        <option value="golden hour rays, warm hazy light">Hora Dorada</option>
+                                        <option value="professional studio lighting, softbox">Estudio</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-blue-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Ángulo de Cámara</label>
+                                    <select id="composition" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none input-focus text-sm transition-all">
+                                        <option value="">Cualquiera</option>
+                                        <option value="wide shot, epic cinematic scale, landscape">Plano General</option>
+                                        <option value="extreme close up portrait, macro detail">Primer Plano</option>
+                                        <option value="low angle, heroic perspective, grand scale">Contrapicado</option>
+                                        <option value="symmetrical centered composition, balanced">Simétrico</option>
+                                        <option value="top down perspective, aerial drone view">Cenital</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-emerald-400 text-[10px] font-bold mb-2 uppercase tracking-[0.2em] block ml-1">Proporción (Aspect Ratio)</label>
+                                    <select id="aspectRatio" class="w-full p-5 bg-slate-950/60 text-white border border-white/10 rounded-[1.5rem] focus:outline-none focus:border-emerald-400 text-sm">
+                                        <option value="1:1">1:1 (Cuadrado)</option>
+                                        <option value="4:5">4:5 (Instagram)</option>
+                                        <option value="9:16">9:16 (Stories/Reels)</option>
+                                        <option value="16:9">16:9 (Youtube/Cine)</option>
+                                        <option value="21:9">21:9 (Ultrawide)</option>
+                                        <option value="3:2">3:2 (Fotografía)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-10 pt-8 border-t border-white/10">
+                            <h3 class="text-rose-400 font-lucky text-xl mb-5 uppercase tracking-widest text-center">Filtro de Exclusión</h3>
+                            <div class="flex flex-wrap gap-3 mb-5 justify-center">
+                                <button class="bg-slate-900/60 text-gray-400 border border-white/5 rounded-2xl px-5 py-2.5 text-[10px] uppercase font-bold hover:border-rose-500 hover:text-rose-300 transition-all shadow-lg" data-value="blurry, low quality, distorted, watermark, signature">Calidad</button>
+                                <button class="bg-slate-900/60 text-gray-400 border border-white/5 rounded-2xl px-5 py-2.5 text-[10px] uppercase font-bold hover:border-rose-500 hover:text-rose-300 transition-all shadow-lg" data-value="deformed, bad anatomy, extra fingers, missing limbs">Anatomía</button>
+                                <button class="bg-slate-900/60 text-gray-400 border border-white/5 rounded-2xl px-5 py-2.5 text-[10px] uppercase font-bold hover:border-rose-500 hover:text-rose-300 transition-all shadow-lg" data-value="text, letters, digits, typography">Texto</button>
+                            </div>
+                            <input type="text" id="customNegative" class="w-full p-5 bg-slate-950/30 text-white border border-white/5 rounded-2xl focus:ring-1 focus:ring-rose-500 outline-none text-sm placeholder-slate-600 shadow-inner" placeholder="Otros elementos prohibidos...">
+                        </div>
+                    </section>
+                </div>
+
+                <div id="expertMode" class="hidden fade-in">
+                    <section class="glass-panel rounded-[3rem] p-8 md:p-12 border border-white/5 shadow-2xl">
+                        <h2 class="font-lucky text-3xl text-white mb-6 uppercase tracking-widest text-center">Brainstorming Maestro 🧠</h2>
+                        <textarea id="expertPrompt" rows="14" class="w-full p-6 bg-slate-950/50 text-white border border-white/10 rounded-[2rem] focus:border-yellow-400 outline-none font-mono text-sm leading-relaxed shadow-inner" placeholder="Escribe tu prompt completo aquí..."></textarea>
+                    </section>
+                </div>
+                
+                <button id="generateBtn" class="w-full btn-pop font-lucky text-2xl md:text-5xl py-8 rounded-[2.5rem] shadow-2xl uppercase tracking-[0.1em] active:scale-95 transition-all">
+                    ✨ DIRIGIR ESCENA ✨
+                </button>
+                
+                <div id="statusLog" class="text-center text-[11px] font-mono text-yellow-500/50 min-h-[30px] uppercase tracking-[0.2em] pt-2"></div>
+            </div>
+
+            <div id="results" class="lg:col-span-1 space-y-8 hidden fade-in">
+                
+                <div class="glass-panel rounded-[3.5rem] p-8 border-l-[12px] border-l-blue-500 shadow-2xl">
+                    <h3 class="font-lucky text-blue-300 text-2xl mb-5 uppercase tracking-widest">Anatomía del Contexto</h3>
+                    <div id="anatomyContainer" class="space-y-2 text-[14px] text-slate-300 font-mono leading-relaxed"></div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="glass-panel rounded-[3.5rem] p-1 relative overflow-hidden group shadow-2xl border border-yellow-500/20">
+                        <div class="absolute top-0 left-0 w-2.5 h-full bg-yellow-400 shadow-[0_0_25px_rgba(251,191,36,0.6)]"></div>
+                        <div class="p-8">
+                            <h3 class="font-lucky text-2xl text-yellow-400 mb-6 uppercase tracking-widest">🎨 Midjourney</h3>
+                            <div class="bg-slate-950/80 rounded-[2rem] p-6 mb-5 border border-white/5 relative group/box">
+                                <span class="text-[9px] font-bold text-yellow-600 uppercase tracking-widest block mb-2">Traducción Detallada</span>
+                                <div id="mjPrompt_es" class="text-[13px] text-slate-300 font-mono leading-relaxed pr-12"></div>
+                                <button onclick="safeCopy('mjPrompt_es', this)" class="copy-btn">COPIAR</button>
+                            </div>
+                            <div class="bg-slate-950/80 rounded-[2rem] p-6 border border-white/5 relative group/box">
+                                <span class="text-[9px] font-bold text-yellow-400 uppercase tracking-widest block mb-2">Prompt Maestro (Full Tech)</span>
+                                <div id="mjPrompt_en" class="text-[13px] text-yellow-100 font-mono leading-relaxed pr-12"></div>
+                                <button onclick="safeCopy('mjPrompt_en', this)" class="copy-btn">COPIAR</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-[3.5rem] p-1 relative overflow-hidden shadow-2xl border-emerald-500/20">
+                        <div class="absolute top-0 left-0 w-2.5 h-full bg-emerald-500"></div>
+                        <div class="p-8">
+                            <h3 class="font-lucky text-2xl text-emerald-400 mb-6 uppercase tracking-widest">🌈 DALL-E 3</h3>
+                            <div class="bg-slate-950/80 rounded-[2rem] p-6 mb-5 border border-white/5 relative">
+                                <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-2">Español Detallado</span>
+                                <div id="dallePrompt_es" class="text-[13px] text-slate-300 font-mono leading-relaxed pr-12"></div>
+                                <button onclick="safeCopy('dallePrompt_es', this)" class="copy-btn">COPIAR</button>
+                            </div>
+                            <div class="bg-slate-950/80 rounded-[2rem] p-6 border border-white/5 relative group/box">
+                                <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-2">Narrativa Visual (EN)</span>
+                                <div id="dallePrompt_en" class="text-[13px] text-emerald-100 font-mono leading-relaxed pr-12"></div>
+                                <button onclick="safeCopy('dallePrompt_en', this)" class="copy-btn">COPIAR</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-[3.5rem] p-1 relative overflow-hidden shadow-2xl border-purple-500/20">
+                        <div class="absolute top-0 left-0 w-2.5 h-full bg-purple-500"></div>
+                        <div class="p-8">
+                            <h3 class="font-lucky text-3xl text-purple-400 mb-6 uppercase tracking-widest">🧪 Stable Diffusion</h3>
+                            <div class="bg-slate-950/80 rounded-[2rem] p-6 mb-5 border border-white/5 relative">
+                                <span class="text-[10px] font-bold text-purple-400 uppercase block mb-2">Positivo (Weighted)</span>
+                                <div id="sdPositivePrompt_en" class="text-[13px] text-purple-100 font-mono leading-relaxed pr-12"></div>
+                                <button onclick="safeCopy('sdPositivePrompt_en', this)" class="copy-btn">COPIAR</button>
+                            </div>
+                            <div class="bg-slate-950/80 rounded-[2rem] p-6 border border-red-900/20 relative group/box">
+                                <span class="text-[10px] font-bold text-red-400 uppercase block mb-2">Negativo (Control)</span>
+                                <div id="sdNegativePrompt_en" class="text-[13px] text-slate-400 font-mono leading-relaxed pr-12"></div>
+                                <button onclick="safeCopy('sdNegativePrompt_en', this)" class="copy-btn">COPIAR</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-[3.5rem] p-1 relative overflow-hidden shadow-2xl border-cyan-500/20">
+                        <div class="absolute top-0 left-0 w-2.5 h-full bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)]"></div>
+                        <div class="p-8">
+                            <h3 class="font-lucky text-2xl text-cyan-400 mb-6 flex items-center gap-3">💎 Nano Banana</h3>
+                            <div class="bg-slate-950/80 rounded-[2.5rem] p-6 border border-white/5 relative group/box shadow-inner">
+                                <span class="text-[10px] font-bold text-cyan-500 uppercase tracking-widest block mb-2">Optimizado Directo</span>
+                                <div id="geminiPrompt_en" class="text-[13px] text-cyan-100 font-mono leading-relaxed pr-12"></div>
+                                <button onclick="safeCopy('geminiPrompt_en', this)" class="copy-btn">COPIAR</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <details class="glass-panel rounded-[3.5rem] mt-10 group overflow-hidden shadow-2xl border-white/5">
+                    <summary class="p-8 cursor-pointer text-sm font-lucky text-slate-400 hover:text-white flex justify-between items-center select-none bg-slate-950/40 uppercase tracking-widest transition-all">
+                        Protocolo de Datos (JSON Profile)
+                        <span class="transform group-open:rotate-180 transition-all text-yellow-400">▼</span>
+                    </summary>
+                    <div class="p-8 pt-0 bg-slate-950/70 relative">
+                        <div class="relative pt-10">
+                            <button onclick="safeCopy('fullJsonOutput', this)" class="copy-btn" style="top: 10px; right: 0;">COPIAR JSON</button>
+                            <pre id="fullJsonOutput" class="text-slate-500 text-[11px] font-mono whitespace-pre-wrap leading-tight"></pre>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </main>
+    </div>
+
+    <script>
+  const SYSTEMINSTRUCTION = `ACT AS World-class AI Visual Director & Prompt Engineer "Prompt Maestro System v3.0".
+
+PHILOSOPHY:
+Based on Protocols 1.0, 2.0 & 3.0
+
+1. Technical Precision:
+Always use specific lenses (85mm, 35mm), aperture (f/1.8), ISO, Global Illumination, and Ray Tracing.
+
+2. Aspect Ratio Strategy:
+Influence the composition based on the Aspect Ratio provided. Vertical for Stories/Reels, Wide for Cinema.
+
+3. Model Specific Syntax:
+- Midjourney: Integrate --ar RATIO, --v 6.0, --style raw, --s 250 naturally.
+- Stable Diffusion: Weights like masterpiece:1.3. Massive NEGATIVE prompt required.
+- DALL-E 3: Poetic narrative, purely affirmative.
+- Nano Banana / Gemini-style field: Direct, concise, object-oriented prompts.
+
+OUTPUT:
+Response MUST be a JSON object:
+{
+  "jsoncontextprofile": {
+    "Subject": "",
+    "Camera": "",
+    "Lighting": "",
+    "Mood": "",
+    "Palette": "",
+    "AspectRatioDescription": ""
+  },
+  "midjourneyes": "",
+  "midjourneyen": "",
+  "dallees": "",
+  "dalleen": "",
+  "sdpositiveen": "",
+  "sdnegativeen": "",
+  "geminiimageen": ""
+}`;
+
+  const RANDOMDATA = {
+    subjects: [
+      "Ciber-Gato DJ",
+      "Deidad Maya de Obsidiana",
+      "Robot Jardinero de Latón",
+      "Astronauta de Cristal",
+      "Dragón Neón",
+      "Samurái Ajolote",
+      "Nómada del Desierto de Cuarzo",
+      "IA Holográfica",
+      "Vikingo Ciberpunk",
+      "Medusa de Fibra Óptica",
+      "Fénix Mecánico",
+      "Guardiana de Galaxias",
+      "Chamán de Bits",
+      "Esfinge de Mercurio"
+    ],
+    actions: [
+      "tejiendo hilos de luz",
+      "meditando en gravedad cero",
+      "invocando una tormenta",
+      "cultivando flores eléctricas",
+      "leyendo el código del universo",
+      "surfeando una nebulosa de gas",
+      "forjando un rayo azul",
+      "custodiando un portal antiguo",
+      "transmutando metal en agua",
+      "componiendo música estelar",
+      "reparando el tejido del tiempo"
+    ],
+    environments: [
+      "en un Tokio año 3000",
+      "bajo el océano bioluminiscente",
+      "dentro de un reloj antiguo",
+      "en la cima de una pirámide de neón",
+      "en una estación espacial de mármol",
+      "en un bosque de espejos",
+      "en una ciudad flotante steampunk",
+      "en un microchip de oro puro",
+      "en un valle de auroras boreales",
+      "en el centro de un agujero negro"
+    ],
+    styles: [
+      "cinematic photorealistic, 8k, movie still, highly detailed",
+      "studio ghibli style, whimsical, hand-drawn anime",
+      "digital art illustration, trending on artstation, masterpiece",
+      "cyberpunk aesthetic, synthwave neon, futuristic",
+      "classic oil painting, textured canvas, museum quality",
+      "unreal engine 5, octane render, 3d volumetric"
+    ],
+    lightings: [
+      "dramatic rim lighting, high contrast, moody",
+      "soft volumetric sunlight, ethereal glow",
+      "neon cyberpunk night, hazy fog, glowing accents",
+      "golden hour rays, warm hazy light",
+      "professional studio lighting, softbox",
+      "bioluminescent glow, mystical light"
+    ],
+    compositions: [
+      "wide shot, epic cinematic scale, landscape",
+      "extreme close up portrait, macro detail",
+      "low angle, heroic perspective, grand scale",
+      "symmetrical centered composition, balanced",
+      "aerial drone view, top-down perspective"
+    ],
+    ratios: ["1:1", "4:5", "9:16", "16:9", "21:9", "3:2"]
+  };
+
+  const generateBtn = document.getElementById('generateBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const randomBtn = document.getElementById('randomBtn');
+  const resultsSection = document.getElementById('results');
+  const statusLog = document.getElementById('statusLog');
+  const toggleModeBtn = document.getElementById('toggleModeBtn');
+  const learnerModeDiv = document.getElementById('learnerMode');
+  const expertModeDiv = document.getElementById('expertMode');
+  const expertPromptTextarea = document.getElementById('expertPrompt');
+
+  let isExpertMode = false;
+  const negativeValues = new Set();
+
+  function safeCopy(elementId, button) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const text = el.innerText;
+    const originalText = button.innerText;
+    button.innerText = 'OK!';
+    button.style.color = '#4ade80';
+
+    const temp = document.createElement('textarea');
+    temp.value = text;
+    temp.style.position = 'fixed';
+    temp.style.left = '-9999px';
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+
+    setTimeout(() => {
+      button.innerText = originalText;
+      button.style.color = '';
+    }, 1500);
+  }
+
+  function safeSetText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text || '';
+  }
+
+  function updateStatus(msg) {
+    if (statusLog) statusLog.innerText = msg || '';
+  }
+
+  async function fetchWithFallback(promptText, negatives) {
+    updateStatus('Invocando al cerebro neuronal...');
+
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        promptText,
+        negatives
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error(data);
+      throw new Error(data?.error || 'Sin conexión');
+    }
+
+    updateStatus('Protocolo generado con éxito');
+    return data;
+  }
+
+  clearBtn.addEventListener('click', () => {
+    ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio', 'customNegative'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = '';
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    });
+
+    expertPromptTextarea.value = '';
+    negativeValues.clear();
+
+    document.querySelectorAll('[data-value]').forEach(tag => {
+      tag.classList.remove('bg-rose-900', 'text-rose-300');
+      tag.classList.add('bg-slate-900/60', 'text-gray-400');
+    });
+
+    resultsSection.classList.add('hidden');
+    updateStatus('Dashboard reseteado');
+    setTimeout(() => updateStatus(''), 1500);
+  });
+
+  randomBtn.addEventListener('click', () => {
+    if (isExpertMode) toggleModeBtn.click();
+
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    document.getElementById('subject').value = pick(RANDOMDATA.subjects);
+    document.getElementById('action').value = pick(RANDOMDATA.actions);
+    document.getElementById('environment').value = pick(RANDOMDATA.environments);
+
+    const sets = [
+      { id: 'style', data: RANDOMDATA.styles },
+      { id: 'lighting', data: RANDOMDATA.lightings },
+      { id: 'composition', data: RANDOMDATA.compositions },
+      { id: 'aspectRatio', data: RANDOMDATA.ratios }
+    ];
+
+    sets.forEach(set => {
+      const el = document.getElementById(set.id);
+      const randomValue = pick(set.data);
+      for (let i = 0; i < el.options.length; i++) {
+        if (el.options[i].value === randomValue) {
+          el.selectedIndex = i;
+          break;
+        }
+      }
+    });
+
+    updateStatus('Director creativo activado');
+    setTimeout(() => updateStatus(''), 1500);
+  });
+
+  document.querySelectorAll('[data-value]').forEach(tag => {
+    tag.addEventListener('click', () => {
+      const value = tag.dataset.value;
+
+      if (negativeValues.has(value)) {
+        negativeValues.delete(value);
+        tag.classList.remove('bg-rose-900', 'text-rose-300');
+        tag.classList.add('bg-slate-900/60', 'text-gray-400');
+      } else {
+        negativeValues.add(value);
+        tag.classList.remove('bg-slate-900/60', 'text-gray-400');
+        tag.classList.add('bg-rose-900', 'text-rose-300');
+      }
+    });
+  });
+
+  toggleModeBtn.addEventListener('click', () => {
+    isExpertMode = !isExpertMode;
+    learnerModeDiv.classList.toggle('hidden');
+    expertModeDiv.classList.toggle('hidden');
+    toggleModeBtn.textContent = isExpertMode ? 'MODO APRENDIZ ✨' : 'MODO EXPERTO ⚡';
+  });
+
+  generateBtn.addEventListener('click', async () => {
+    let promptText = '';
+    const negatives = [
+      ...negativeValues,
+      document.getElementById('customNegative').value
+    ].filter(Boolean).join(', ');
+
+    const inputsDisplay = [];
+
+    if (isExpertMode) {
+      promptText = expertPromptTextarea.value.trim();
+      if (!promptText) {
+        alert('Escribe algo maestro.');
+        return;
+      }
+    } else {
+      const ids = ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        const val = el ? el.value.trim() : '';
+        if (val) inputsDisplay.push({ key: id, val });
+      });
+
+      promptText = inputsDisplay.map(i => `${i.key}: ${i.val}`).join(', ');
+
+      if (!promptText) {
+        alert('Llena campos.');
+        return;
+      }
+    }
+
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = 'LO BUENO DEMORA UN POCO... <span class="loading-dots"></span>';
+    generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    resultsSection.classList.add('hidden');
+
+    try {
+      const data = await fetchWithFallback(promptText, negatives);
+      const json = data;
+
+      safeSetText('mjPromptes', json.midjourneyes);
+      safeSetText('mjPrompten', json.midjourneyen);
+      safeSetText('dallePromptes', json.dallees);
+      safeSetText('dallePrompten', json.dalleen);
+      safeSetText('sdPositivePrompten', json.sdpositiveen);
+      safeSetText('sdNegativePrompten', json.sdnegativeen);
+      safeSetText('geminiPrompten', json.geminiimageen);
+
+      const profileToShow = json.jsoncontextprofile || json;
+      safeSetText('fullJsonOutput', JSON.stringify(profileToShow, null, 2));
+
+      const anatomy = document.getElementById('anatomyContainer');
+
+      if (isExpertMode) {
+        anatomy.innerHTML = `<div class="italic text-slate-400">${promptText}</div>`;
+      } else {
+        anatomy.innerHTML = inputsDisplay.map(i => `
+          <div class="flex gap-4">
+            <span class="text-yellow-500 font-bold uppercase text-[9px] w-32 text-right tracking-widest">${i.key}</span>
+            <span class="text-slate-200">${i.val}</span>
+          </div>
+        `).join('');
+      }
+
+      resultsSection.classList.remove('hidden');
+      setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth' }), 150);
+    } catch (err) {
+      console.error(err);
+      updateStatus('Error');
+      alert('Hubo un problema de conexión.');
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '✨ DIRIGIR ESCENA ✨';
+      generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+  });
+</script>
+</body>
+</html>
