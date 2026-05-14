@@ -103,6 +103,57 @@
       border-color: #fbbf24;
       box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1);
     }
+
+#historyDrawer.open {
+  transform: translateX(0);
+}
+
+.history-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 1.25rem;
+  padding: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.history-card:hover {
+  border-color: rgba(251, 191, 36, 0.35);
+  transform: translateY(-1px);
+}
+
+.history-title {
+  font-size: 0.82rem;
+  line-height: 1.2rem;
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.history-meta {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+}
+
+.history-action-btn {
+  font-size: 0.62rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.15s ease;
+}
+
+.history-action-btn:hover {
+  transform: translateY(-1px);
+}
+    
   </style>
 </head>
 <body class="p-4 md:p-8 font-fredoka antialiased">
@@ -620,7 +671,277 @@
         generateBtn.innerHTML = '✨ DIRIGIR ESCENA ✨';
         generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
+
+const historyItem = {
+  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+  createdAt: new Date().toISOString(),
+  title: (promptText || 'Prompt').slice(0, 42),
+  mode: isExpertMode ? 'expert' : 'learner',
+  promptText,
+  negatives,
+  aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
+  output: json,
+  favorite: false
+};
+
+promptHistory.unshift(historyItem);
+promptHistory = promptHistory.slice(0, 20);
+saveHistory();
+renderHistory();
+      
     });
+
+const HISTORY_KEY = 'directprompt_history_v2';
+let promptHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+const historyToggleBtn = document.getElementById('historyToggleBtn');
+const historyDrawer = document.getElementById('historyDrawer');
+const historyOverlay = document.getElementById('historyOverlay');
+const historyCloseBtn = document.getElementById('historyCloseBtn');
+const historyList = document.getElementById('historyList');
+const exportHistoryTxtBtn = document.getElementById('exportHistoryTxtBtn');
+const exportHistoryJsonBtn = document.getElementById('exportHistoryJsonBtn');
+
+function saveHistory() {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(promptHistory));
+}
+
+function openHistoryDrawer() {
+  historyDrawer.classList.add('open');
+  historyOverlay.classList.remove('hidden');
+}
+
+function closeHistoryDrawer() {
+  historyDrawer.classList.remove('open');
+  historyOverlay.classList.add('hidden');
+}
+
+function toggleFavorite(id) {
+  promptHistory = promptHistory.map(item => item.id === id ? { ...item, favorite: !item.favorite } : item);
+  saveHistory();
+  renderHistory();
+}
+
+function deleteHistoryItem(id) {
+  promptHistory = promptHistory.filter(item => item.id !== id);
+  saveHistory();
+  renderHistory();
+}
+
+function exportSingleItem(id, type) {
+  const item = promptHistory.find(x => x.id === id);
+  if (!item) return;
+
+  const content = type === 'json'
+    ? JSON.stringify(item, null, 2)
+    : `${item.title || 'Prompt'}\n\n${item.promptText || ''}\n\nNegativos: ${item.negatives || ''}`;
+
+  const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = type === 'json' ? `${item.title || 'prompt'}.json` : `${item.title || 'prompt'}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function loadPromptFromHistory(item) {
+  if (!item) return;
+
+  if (item.mode === 'expert') {
+    if (document.getElementById('expertMode')?.classList.contains('hidden')) {
+      toggleModeBtn.click();
+    }
+    expertPromptTextarea.value = item.promptText || '';
+  } else {
+    if (document.getElementById('learnerMode')?.classList.contains('hidden')) {
+      toggleModeBtn.click();
+    }
+
+    const parts = (item.promptText || '').split(', ').map(s => s.trim());
+    const map = {};
+    parts.forEach(pair => {
+      const idx = pair.indexOf(':');
+      if (idx > -1) {
+        const key = pair.slice(0, idx).trim();
+        const val = pair.slice(idx + 1).trim();
+        map[key] = val;
+      }
+    });
+
+    if (map.subject && document.getElementById('subject')) document.getElementById('subject').value = map.subject;
+    if (map.action && document.getElementById('action')) document.getElementById('action').value = map.action;
+    if (map.environment && document.getElementById('environment')) document.getElementById('environment').value = map.environment;
+    if (map.style && document.getElementById('style')) document.getElementById('style').value = map.style;
+    if (map.lighting && document.getElementById('lighting')) document.getElementById('lighting').value = map.lighting;
+    if (map.composition && document.getElementById('composition')) document.getElementById('composition').value = map.composition;
+    if (map.aspectRatio && document.getElementById('aspectRatio')) document.getElementById('aspectRatio').value = map.aspectRatio;
+  }
+
+  updateStatus('Prompt cargado desde historial');
+  openHistoryDrawer();
+}
+
+function duplicateHistoryItem(id) {
+  const item = promptHistory.find(x => x.id === id);
+  if (!item) return;
+
+  const duplicated = {
+    ...item,
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    createdAt: new Date().toISOString(),
+    title: `${item.title || 'Prompt'} (Copia)`,
+    favorite: false
+  };
+
+  promptHistory.unshift(duplicated);
+  promptHistory = promptHistory.slice(0, 20);
+  saveHistory();
+  renderHistory();
+  loadPromptFromHistory(duplicated);
+}
+
+function recreateVariant(item) {
+  if (!item) return;
+
+  const variant = {
+    ...item,
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    createdAt: new Date().toISOString(),
+    title: `${item.title || 'Prompt'} (Variante)`
+  };
+
+  if (item.mode === 'expert') {
+    variant.promptText = (item.promptText || '')
+      .replace(/Camera:[^\n]*/i, 'Camera: more cinematic angle')
+      .replace(/Lighting:[^\n]*/i, 'Lighting: more dramatic lighting')
+      .replace(/Mood:[^\n]*/i, 'Mood: more intense and atmospheric');
+  }
+
+  promptHistory.unshift(variant);
+  promptHistory = promptHistory.slice(0, 20);
+  saveHistory();
+  renderHistory();
+  loadPromptFromHistory(variant);
+}
+
+function renderHistory() {
+  if (!historyList) return;
+
+  if (!promptHistory.length) {
+    historyList.innerHTML = `
+      <div class="text-center text-slate-500 text-sm py-10 border border-dashed border-white/10 rounded-2xl">
+        Aún no hay prompts guardados.
+      </div>
+    `;
+    return;
+  }
+
+  historyList.innerHTML = promptHistory.map(item => {
+    const date = new Date(item.createdAt);
+    const timeLabel = isNaN(date.getTime()) ? '' : date.toLocaleString('es-MX', {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    });
+
+    return `
+      <article class="history-card ${item.favorite ? 'border-yellow-400/40' : ''}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="history-title truncate">${item.title || 'Prompt sin título'}</div>
+            <div class="history-meta mt-1">${item.mode || 'learner'} · ${item.aspectRatio || 'N/R'} · ${timeLabel}</div>
+          </div>
+          <button class="text-yellow-400 text-lg" onclick="toggleFavorite('${item.id}')">
+            ${item.favorite ? '★' : '☆'}
+          </button>
+        </div>
+
+        <p class="text-slate-300 text-xs mt-3 leading-5 whitespace-pre-wrap">
+          ${item.promptText || ''}
+        </p>
+
+        <div class="history-actions">
+          <button class="history-action-btn bg-blue-500/15 text-blue-200 border-blue-400/20" onclick="loadHistoryItem('${item.id}')">Cargar</button>
+          <button class="history-action-btn bg-cyan-500/15 text-cyan-200 border-cyan-400/20" onclick="duplicateHistoryItem('${item.id}')">Duplicar</button>
+          <button class="history-action-btn bg-violet-500/15 text-violet-200 border-violet-400/20" onclick="variantHistoryItem('${item.id}')">Variante</button>
+          <button class="history-action-btn bg-emerald-500/15 text-emerald-200 border-emerald-400/20" onclick="exportSingleItem('${item.id}', 'json')">JSON</button>
+          <button class="history-action-btn bg-amber-500/15 text-amber-200 border-amber-400/20" onclick="exportSingleItem('${item.id}', 'txt')">TXT</button>
+          <button class="history-action-btn bg-rose-500/15 text-rose-200 border-rose-400/20" onclick="deleteHistoryItem('${item.id}')">Borrar</button>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function loadHistoryItem(id) {
+  const item = promptHistory.find(x => x.id === id);
+  if (!item) return;
+  loadPromptFromHistory(item);
+}
+
+function variantHistoryItem(id) {
+  const item = promptHistory.find(x => x.id === id);
+  if (!item) return;
+  recreateVariant(item);
+}
+
+function exportAllHistory(type) {
+  const content = type === 'json'
+    ? JSON.stringify(promptHistory, null, 2)
+    : promptHistory.map(i => `${i.title}\n${i.promptText}\nNegativos: ${i.negatives || ''}\n`).join('\n---\n');
+
+  const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = type === 'json' ? 'directprompt-history.json' : 'directprompt-history.txt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+historyToggleBtn.addEventListener('click', () => {
+  historyDrawer.classList.contains('open') ? closeHistoryDrawer() : openHistoryDrawer();
+});
+
+historyCloseBtn.addEventListener('click', closeHistoryDrawer);
+historyOverlay.addEventListener('click', closeHistoryDrawer);
+exportHistoryTxtBtn.addEventListener('click', () => exportAllHistory('txt'));
+exportHistoryJsonBtn.addEventListener('click', () => exportAllHistory('json'));
+
+renderHistory();
+    
   </script>
+
+<button id="historyToggleBtn" class="fixed bottom-6 right-6 z-[60] w-14 h-14 rounded-full bg-yellow-400 text-slate-950 font-bold shadow-2xl border-4 border-yellow-200 hover:scale-105 transition-all flex items-center justify-center">
+  ⏳
+</button>
+
+<div id="historyOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55] hidden"></div>
+
+<aside id="historyDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-slate-950/95 border-l border-white/10 shadow-2xl z-[56] transform translate-x-full transition-transform duration-300 flex flex-col">
+  <div class="p-5 border-b border-white/10 flex items-center justify-between">
+    <div>
+      <h3 class="font-lucky text-yellow-400 text-2xl uppercase tracking-widest">Historial</h3>
+      <p class="text-[10px] text-slate-400 uppercase tracking-[0.2em]">Últimos 20 prompts</p>
+    </div>
+    <button id="historyCloseBtn" class="text-slate-300 hover:text-white text-2xl leading-none">×</button>
+  </div>
+
+  <div class="p-4 border-b border-white/10 flex gap-2">
+    <button id="exportHistoryTxtBtn" class="flex-1 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold uppercase hover:bg-cyan-500/30 transition-all">
+      Export TXT
+    </button>
+    <button id="exportHistoryJsonBtn" class="flex-1 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold uppercase hover:bg-emerald-500/30 transition-all">
+      Export JSON
+    </button>
+  </div>
+
+  <div id="historyList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+</aside>  
+  
 </body>
 </html>
