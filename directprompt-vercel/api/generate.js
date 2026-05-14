@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const SYSTEM_INSTRUCTION = `
 You are a world-class AI Visual Director and Prompt Engineer.
 
-You MUST return ONLY valid JSON.
+Return ONLY valid JSON.
 No markdown.
 No triple backticks.
 No explanations.
@@ -57,6 +57,91 @@ Return only valid JSON.
       'google/gemma-2-9b-it:free'
     ];
 
+    function extractTextContent(content) {
+      if (!content) return '';
+      if (typeof content === 'string') return content;
+      if (Array.isArray(content)) {
+        return content
+          .map(part => {
+            if (typeof part === 'string') return part;
+            if (part?.type === 'text' && typeof part?.text === 'string') return part.text;
+            if (typeof part?.text === 'string') return part.text;
+            if (typeof part?.content === 'string') return part.content;
+            return '';
+          })
+          .join('\n')
+          .trim();
+      }
+      if (typeof content === 'object') {
+        if (typeof content.text === 'string') return content.text;
+        if (typeof content.content === 'string') return content.content;
+      }
+      return '';
+    }
+
+    function stripCodeFences(text) {
+      let cleaned = (text || '').trim();
+      if (cleaned.startsWith('```json')) {
+        cleaned = cleaned.replace(/^```json/, '').trim();
+      }
+      if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```/, '').trim();
+      }
+      if (cleaned.endsWith('```')) {
+        cleaned = cleaned.replace(/```$/, '').trim();
+      }
+      return cleaned;
+    }
+
+    function tryParseJsonFromText(text) {
+      const cleaned = stripCodeFences(text);
+
+      try {
+        return JSON.parse(cleaned);
+      } catch (e) {}
+
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const possibleJson = cleaned.slice(firstBrace, lastBrace + 1);
+        try {
+          return JSON.parse(possibleJson);
+        } catch (e) {}
+      }
+
+      return null;
+    }
+
+    function normalizeParsed(parsed, rawText, promptText, negatives) {
+      const fallbackBase = rawText || `Prompt base: ${promptText}`;
+
+      const mjEs = parsed?.midjourneyes || fallbackBase;
+      const mjEn = parsed?.midjourneyen || fallbackBase;
+      const dalleEs = parsed?.dallees || fallbackBase;
+      const dalleEn = parsed?.dalleen || fallbackBase;
+      const sdPos = parsed?.sdpositiveen || fallbackBase;
+      const sdNeg = parsed?.sdnegativeen || negatives || 'blurry, low quality, distorted';
+      const gemini = parsed?.geminiimageen || fallbackBase;
+
+      return {
+        jsoncontextprofile: {
+          Subject: parsed?.jsoncontextprofile?.Subject || promptText,
+          Camera: parsed?.jsoncontextprofile?.Camera || 'cinematic composition',
+          Lighting: parsed?.jsoncontextprofile?.Lighting || 'dramatic lighting',
+          Mood: parsed?.jsoncontextprofile?.Mood || 'epic, atmospheric',
+          Palette: parsed?.jsoncontextprofile?.Palette || 'high contrast cinematic palette',
+          AspectRatioDescription: parsed?.jsoncontextprofile?.AspectRatioDescription || 'Adapted to selected aspect ratio'
+        },
+        midjourneyes: mjEs,
+        midjourneyen: mjEn,
+        dallees: dalleEs,
+        dalleen: dalleEn,
+        sdpositiveen: sdPos,
+        sdnegativeen: sdNeg,
+        geminiimageen: gemini
+      };
+    }
+
     let lastError = null;
 
     for (const model of modelsToTry) {
@@ -81,65 +166,35 @@ Return only valid JSON.
         });
 
         const data = await response.json();
-        console.log(`MODEL ${model} RESPONSE:`, JSON.stringify(data));
+        console.log(`MODEL ${model} RAW RESPONSE:`, JSON.stringify(data));
 
         if (!response.ok) {
           lastError = { model, status: response.status, data };
-          if (response.status === 429) continue;
           continue;
         }
 
-        const raw = data?.choices?.[0]?.message?.content;
+        const content = data?.choices?.[0]?.message?.content;
+        const rawText = extractTextContent(content);
 
-        if (!raw) {
-          lastError = { model, error: 'Sin content', data };
+        console.log(`MODEL ${model} EXTRACTED TEXT:`, rawText);
+
+        if (!rawText) {
+          lastError = { model, error: 'Sin contenido extraíble', data };
           continue;
         }
 
-        let cleaned = raw.trim();
+        const parsed = tryParseJsonFromText(rawText);
 
-        if (cleaned.startsWith('```json')) {
-          cleaned = cleaned.replace(/^```json/, '').trim();
-        }
-        if (cleaned.startsWith('```')) {
-          cleaned = cleaned.replace(/^```/, '').trim();
-        }
-        if (cleaned.endsWith('```')) {
-          cleaned = cleaned.replace(/```$/, '').trim();
+        if (parsed) {
+          const normalized = normalizeParsed(parsed, rawText, promptText, negatives);
+          return res.status(200).json(normalized);
         }
 
-        let parsed;
-        try {
-          parsed = JSON.parse(cleaned);
-        } catch (e) {
-          console.log(`MODEL ${model} RAW FAILED TO PARSE:`, cleaned);
-          lastError = { model, error: 'JSON inválido', raw: cleaned };
-          continue;
-        }
-
-        const normalized = {
-          jsoncontextprofile: {
-            Subject: parsed?.jsoncontextprofile?.Subject || 'No definido',
-            Camera: parsed?.jsoncontextprofile?.Camera || 'No definido',
-            Lighting: parsed?.jsoncontextprofile?.Lighting || 'No definido',
-            Mood: parsed?.jsoncontextprofile?.Mood || 'No definido',
-            Palette: parsed?.jsoncontextprofile?.Palette || 'No definido',
-            AspectRatioDescription: parsed?.jsoncontextprofile?.AspectRatioDescription || 'No definido'
-          },
-          midjourneyes: parsed?.midjourneyes || 'Sin contenido generado',
-          midjourneyen: parsed?.midjourneyen || 'No content generated',
-          dallees: parsed?.dallees || 'Sin contenido generado',
-          dalleen: parsed?.dalleen || 'No content generated',
-          sdpositiveen: parsed?.sdpositiveen || 'No content generated',
-          sdnegativeen: parsed?.sdnegativeen || 'No content generated',
-          geminiimageen: parsed?.geminiimageen || 'No content generated'
-        };
-
-        return res.status(200).json(normalized);
+        const fallbackNormalized = normalizeParsed({}, rawText, promptText, negatives);
+        return res.status(200).json(fallbackNormalized);
       } catch (err) {
         console.log(`MODEL ${model} FETCH ERROR:`, err.message);
         lastError = { model, error: err.message };
-        continue;
       }
     }
 
