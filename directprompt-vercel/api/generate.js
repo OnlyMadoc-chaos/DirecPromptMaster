@@ -46,6 +46,8 @@ AspectRatioDescription: ...
 
 Do not use markdown code fences.
 Do not return JSON.
+Do not add explanations.
+Do not include reasoning.
 Do not omit any section.
 `;
 
@@ -106,20 +108,22 @@ Generate all sections completely.
       });
     }
 
+    const cleaned = text.replace(/\r/g, '').trim();
+
     function getSection(label, nextLabels) {
       const startTag = `[${label}]`;
-      const start = text.indexOf(startTag);
+      const start = cleaned.indexOf(startTag);
       if (start === -1) return '';
 
       const contentStart = start + startTag.length;
-      let end = text.length;
+      let end = cleaned.length;
 
       for (const next of nextLabels) {
-        const idx = text.indexOf(`[${next}]`, contentStart);
+        const idx = cleaned.indexOf(`[${next}]`, contentStart);
         if (idx !== -1 && idx < end) end = idx;
       }
 
-      return text.slice(contentStart, end).trim();
+      return cleaned.slice(contentStart, end).trim();
     }
 
     const jsonProfileRaw = getSection('JSONCONTEXTPROFILE', [
@@ -154,33 +158,33 @@ Generate all sections completely.
         'SD_POSITIVE_EN',
         'SD_NEGATIVE_EN',
         'GEMINI_IMAGE_EN'
-      ]) || 'Sin contenido generado',
+      ]),
       midjourneyen: getSection('MIDJOURNEY_EN', [
         'DALLE_ES',
         'DALLE_EN',
         'SD_POSITIVE_EN',
         'SD_NEGATIVE_EN',
         'GEMINI_IMAGE_EN'
-      ]) || 'No content generated',
+      ]),
       dallees: getSection('DALLE_ES', [
         'DALLE_EN',
         'SD_POSITIVE_EN',
         'SD_NEGATIVE_EN',
         'GEMINI_IMAGE_EN'
-      ]) || 'Sin contenido generado',
+      ]),
       dalleen: getSection('DALLE_EN', [
         'SD_POSITIVE_EN',
         'SD_NEGATIVE_EN',
         'GEMINI_IMAGE_EN'
-      ]) || 'No content generated',
+      ]),
       sdpositiveen: getSection('SD_POSITIVE_EN', [
         'SD_NEGATIVE_EN',
         'GEMINI_IMAGE_EN'
-      ]) || 'No content generated',
+      ]),
       sdnegativeen: getSection('SD_NEGATIVE_EN', [
         'GEMINI_IMAGE_EN'
-      ]) || negatives || 'blurry, low quality, distorted',
-      geminiimageen: getSection('GEMINI_IMAGE_EN', []) || 'No content generated'
+      ]),
+      geminiimageen: getSection('GEMINI_IMAGE_EN', [])
     };
 
     return res.status(200).json(result);
