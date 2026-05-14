@@ -575,19 +575,20 @@ Response MUST be a JSON object:
 
     try {
       const data = await fetchWithFallback(promptText, negatives);
-      const json = data;
+const json = data;
 
-      safeSetText('mjPromptes', json.midjourneyes);
-      safeSetText('mjPrompten', json.midjourneyen);
-      safeSetText('dallePromptes', json.dallees);
-      safeSetText('dallePrompten', json.dalleen);
-      safeSetText('sdPositivePrompten', json.sdpositiveen);
-      safeSetText('sdNegativePrompten', json.sdnegativeen);
-      safeSetText('geminiPrompten', json.geminiimageen);
+console.log('JSON RECIBIDO DEL BACKEND:', json);
+alert('Sí llegó respuesta del backend. Revisa el bloque JSON.');
 
-      const profileToShow = json.jsoncontextprofile || json;
-      safeSetText('fullJsonOutput', JSON.stringify(profileToShow, null, 2));
+safeSetText('mjPromptes', json.midjourneyes || 'VACÍO EN mjPromptes');
+safeSetText('mjPrompten', json.midjourneyen || 'VACÍO EN mjPrompten');
+safeSetText('dallePromptes', json.dallees || 'VACÍO EN dallePromptes');
+safeSetText('dallePrompten', json.dalleen || 'VACÍO EN dallePrompten');
+safeSetText('sdPositivePrompten', json.sdpositiveen || 'VACÍO EN sdPositivePrompten');
+safeSetText('sdNegativePrompten', json.sdnegativeen || 'VACÍO EN sdNegativePrompten');
+safeSetText('geminiPrompten', json.geminiimageen || 'VACÍO EN geminiPrompten');
 
+safeSetText('fullJsonOutput', JSON.stringify(json, null, 2));
       const anatomy = document.getElementById('anatomyContainer');
 
       if (isExpertMode) {
