@@ -535,27 +535,85 @@
       loadPromptFromHistory(duplicated);
     }
 
-    function recreateVariant(item) {
-      if (!item) return;
-      const variant = {
-        ...item,
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        createdAt: new Date().toISOString(),
-        title: `${item.title || 'Prompt'} (Variante)`
-      };
-      if (item.mode === 'expert') {
-        variant.promptText = (item.promptText || '')
-          .replace(/Camera:[^\n]*/i, 'Camera: more cinematic angle')
-          .replace(/Lighting:[^\n]*/i, 'Lighting: more dramatic lighting')
-          .replace(/Mood:[^\n]*/i, 'Mood: more intense and atmospheric');
-      }
-      promptHistory.unshift(variant);
-      promptHistory = promptHistory.slice(0, 20);
-      saveHistory();
-      renderHistory();
-      loadPromptFromHistory(variant);
-    }
+  function recreateVariant(item) {
+  if (!item) return;
 
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  const variantMaps = {
+    style: [
+      "cinematic photorealistic, 8k, movie still, highly detailed",
+      "studio ghibli style, whimsical, hand-drawn anime",
+      "digital art illustration, trending on artstation, masterpiece",
+      "cyberpunk aesthetic, synthwave neon, futuristic",
+      "classic oil painting, textured canvas, museum quality",
+      "unreal engine 5, octane render, 3d volumetric"
+    ],
+    lighting: [
+      "dramatic rim lighting, high contrast, moody",
+      "soft volumetric sunlight, ethereal glow",
+      "neon cyberpunk night, hazy fog, glowing accents",
+      "golden hour rays, warm hazy light",
+      "professional studio lighting, softbox",
+      "bioluminescent glow, mystical light"
+    ],
+    composition: [
+      "wide shot, epic cinematic scale, landscape",
+      "extreme close up portrait, macro detail",
+      "low angle, heroic perspective, grand scale",
+      "symmetrical centered composition, balanced",
+      "top down perspective, aerial drone view"
+    ]
+  };
+
+  const base = { ...item };
+  const mode = base.mode || 'learner';
+
+  if (mode === 'learner') {
+    const currentStyle = base.style || '';
+    const currentLighting = base.lighting || '';
+    const currentComposition = base.composition || '';
+
+    let newStyle = pick(variantMaps.style.filter(x => x !== currentStyle));
+    let newLighting = pick(variantMaps.lighting.filter(x => x !== currentLighting));
+    let newComposition = pick(variantMaps.composition.filter(x => x !== currentComposition));
+
+    base.style = newStyle || currentStyle;
+    base.lighting = newLighting || currentLighting;
+    base.composition = newComposition || currentComposition;
+
+    base.promptText = [
+      `subject: ${base.subject || ''}`,
+      `action: ${base.action || ''}`,
+      `environment: ${base.environment || ''}`,
+      `style: ${base.style || ''}`,
+      `lighting: ${base.lighting || ''}`,
+      `composition: ${base.composition || ''}`,
+      `aspectRatio: ${base.aspectRatio || 'N/R'}`
+    ].join(', ');
+  }
+
+  if (mode === 'expert') {
+    base.promptText = (base.promptText || '')
+      .replace(/camera:[^\n]*/i, 'camera: more cinematic angle')
+      .replace(/lighting:[^\n]*/i, 'lighting: more dramatic lighting')
+      .replace(/mood:[^\n]*/i, 'mood: more intense and atmospheric');
+  }
+
+  const variant = {
+    ...base,
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    createdAt: new Date().toISOString(),
+    title: `${base.title || 'Prompt'} (Variante)`,
+    favorite: false
+  };
+
+  promptHistory.unshift(variant);
+  promptHistory = promptHistory.slice(0, 20);
+  saveHistory();
+  renderHistory();
+  loadPromptFromHistory(variant);
+}
     function renderHistory() {
       if (!historyList) return;
 
