@@ -11,25 +11,16 @@ export default async function handler(req, res) {
     }
 
     const SYSTEM_INSTRUCTION = `
-ACT AS World-class AI Visual Director & Prompt Engineer "Prompt Maestro System v3.0".
+You are a world-class AI Visual Director and Prompt Engineer.
 
-PHILOSOPHY:
-Based on Protocols 1.0, 2.0 & 3.0
+Your task is to generate prompt outputs for image models.
 
-1. Technical Precision:
-Always use specific lenses (85mm, 35mm), aperture (f/1.8), ISO, Global Illumination, and Ray Tracing.
+You MUST return ONLY valid JSON.
+Do not use markdown.
+Do not wrap in triple backticks.
+Do not add explanations.
 
-2. Aspect Ratio Strategy:
-Influence the composition based on the Aspect Ratio provided. Vertical for Stories/Reels, Wide for Cinema.
-
-3. Model Specific Syntax:
-- Midjourney: Integrate --ar RATIO, --v 6.0, --style raw, --s 250 naturally.
-- Stable Diffusion: Weights like masterpiece:1.3. Massive NEGATIVE prompt required.
-- DALL-E 3: Poetic narrative, purely affirmative.
-- Nano Banana / Gemini-style field: Direct, concise, object-oriented prompts.
-
-OUTPUT:
-Return ONLY a valid JSON object with this exact structure:
+Return this exact JSON structure:
 {
   "jsoncontextprofile": {
     "Subject": "",
@@ -56,7 +47,9 @@ ${promptText}
 NEGATIVOS:
 ${negatives || ''}
 
-Genera el protocolo completo y devuelve SOLO JSON válido.
+Generate all fields with rich, useful content.
+Never leave fields empty.
+Return only valid JSON.
 `;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -64,21 +57,22 @@ Genera el protocolo completo y devuelve SOLO JSON válido.
       headers: {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://tu-dominio-vercel.vercel.app',
+        'HTTP-Referer': 'https://direc-prompt-master.vercel.app',
         'X-OpenRouter-Title': 'DirecPrompt'
       },
       body: JSON.stringify({
-        model: 'openrouter/free',
+        model: 'meta-llama/llama-3.2-3b-instruct:free',
         messages: [
           { role: 'system', content: SYSTEM_INSTRUCTION },
           { role: 'user', content: userPrompt }
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.7
+        temperature: 0.4,
+        max_tokens: 1800
       })
     });
 
     const data = await response.json();
+    console.log('OPENROUTER RAW RESPONSE:', JSON.stringify(data));
 
     if (!response.ok) {
       return res.status(response.status).json({
@@ -90,21 +84,56 @@ Genera el protocolo completo y devuelve SOLO JSON válido.
     const raw = data?.choices?.[0]?.message?.content;
 
     if (!raw) {
-      return res.status(500).json({ error: 'OpenRouter no devolvió contenido' });
+      return res.status(500).json({
+        error: 'OpenRouter no devolvió contenido',
+        details: data
+      });
+    }
+
+    let cleaned = raw.trim();
+
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.replace(/^```json/, '').trim();
+    }
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```/, '').trim();
+    }
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.replace(/```$/, '').trim();
     }
 
     let parsed;
     try {
-      parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      parsed = JSON.parse(cleaned);
     } catch (e) {
+      console.log('RAW CONTENT THAT FAILED TO PARSE:', cleaned);
       return res.status(500).json({
         error: 'La respuesta no vino en JSON válido',
-        raw
+        raw: cleaned
       });
     }
 
-    return res.status(200).json(parsed);
+    const normalized = {
+      jsoncontextprofile: {
+        Subject: parsed?.jsoncontextprofile?.Subject || 'No definido',
+        Camera: parsed?.jsoncontextprofile?.Camera || 'No definido',
+        Lighting: parsed?.jsoncontextprofile?.Lighting || 'No definido',
+        Mood: parsed?.jsoncontextprofile?.Mood || 'No definido',
+        Palette: parsed?.jsoncontextprofile?.Palette || 'No definido',
+        AspectRatioDescription: parsed?.jsoncontextprofile?.AspectRatioDescription || 'No definido'
+      },
+      midjourneyes: parsed?.midjourneyes || 'Sin contenido generado',
+      midjourneyen: parsed?.midjourneyen || 'No content generated',
+      dallees: parsed?.dallees || 'Sin contenido generado',
+      dalleen: parsed?.dalleen || 'No content generated',
+      sdpositiveen: parsed?.sdpositiveen || 'No content generated',
+      sdnegativeen: parsed?.sdnegativeen || 'No content generated',
+      geminiimageen: parsed?.geminiimageen || 'No content generated'
+    };
+
+    return res.status(200).json(normalized);
   } catch (error) {
+    console.log('SERVER ERROR:', error.message);
     return res.status(500).json({
       error: 'Fallo interno del servidor',
       details: error.message
