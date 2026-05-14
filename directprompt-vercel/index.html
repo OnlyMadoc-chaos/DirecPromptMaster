@@ -894,107 +894,80 @@ function updateResultsFromJson(json, promptText, inputsDisplay, isExpertModeFlag
     toggleModeBtn.textContent = isExpertMode ? 'MODO APRENDIZ âœ¨' : 'MODO EXPERTO âš¡';
   });
 
-  generateBtn.addEventListener('click', async () => {
-    let promptText = '';
-    const negatives = [
-      ...negativeValues,
-      document.getElementById('customNegative').value
-    ].filter(Boolean).join(', ');
+generateBtn.addEventListener('click', async () => {
+  let promptText = '';
+  const negatives = [...negativeValues, document.getElementById('customNegative').value].filter(Boolean).join(', ');
+  const inputsDisplay = [];
 
-    const inputsDisplay = [];
-
-    if (isExpertMode) {
-      promptText = expertPromptTextarea.value.trim();
-      if (!promptText) {
-        alert('Escribe algo maestro.');
-        return;
-      }
-    } else {
-      const ids = ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio'];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        const val = el ? el.value.trim() : '';
-        if (val) inputsDisplay.push({ key: id, val });
-      });
-
-      promptText = inputsDisplay.map(i => `${i.key}: ${i.val}`).join(', ');
-
-      if (!promptText) {
-        alert('Llena campos.');
-        return;
-      }
+  if (isExpertMode) {
+    promptText = expertPromptTextarea.value.trim();
+    if (!promptText) {
+      alert('Escribe algo maestro.');
+      return;
     }
+  } else {
+    const ids = ['subject', 'action', 'environment', 'style', 'lighting', 'composition', 'aspectRatio'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      const val = el ? el.value.trim() : '';
+      if (val) inputsDisplay.push({ key: id, val });
+    });
 
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = 'LO BUENO DEMORA UN POCO... <span class="loading-dots"></span>';
-    generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    resultsSection.classList.add('hidden');
+    promptText = inputsDisplay.map(i => `${i.key}: ${i.val}`).join(', ');
 
-    try {
-      const data = await fetchWithFallback(promptText, negatives);
-      const json = data;
-
-      console.log('JSON RECIBIDO DEL BACKEND:', json);
-
-      safeSetText('mjPromptes', json.midjourneyes || '');
-      safeSetText('mjPrompten', json.midjourneyen || '');
-      safeSetText('dallePromptes', json.dallees || '');
-      safeSetText('dallePrompten', json.dalleen || '');
-      safeSetText('sdPositivePrompten', json.sdpositiveen || '');
-      safeSetText('sdNegativePrompten', json.sdnegativeen || '');
-      safeSetText('geminiPrompten', json.geminiimageen || '');
-
-      const profileToShow = json.jsoncontextprofile || json;
-      safeSetText('fullJsonOutput', JSON.stringify(profileToShow, null, 2));
-
-      const anatomy = document.getElementById('anatomyContainer');
-      if (isExpertMode) {
-        anatomy.innerHTML = `<div class="italic text-slate-400">${promptText}</div>`;
-      } else {
-        anatomy.innerHTML = inputsDisplay.map(i => `
-          <div class="flex gap-4">
-            <span class="text-yellow-500 font-bold uppercase text-[9px] w-32 text-right tracking-widest">${i.key}</span>
-            <span class="text-slate-200">${i.val}</span>
-          </div>
-        `).join('');
-      }
-
-      const historyItem = {
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        createdAt: new Date().toISOString(),
-        title: (promptText || 'Prompt').slice(0, 42),
-        mode: isExpertMode ? 'expert' : 'learner',
-        promptText,
-        negatives,
-        subject: document.getElementById('subject')?.value || '',
-        action: document.getElementById('action')?.value || '',
-        environment: document.getElementById('environment')?.value || '',
-        style: document.getElementById('style')?.value || '',
-        lighting: document.getElementById('lighting')?.value || '',
-        composition: document.getElementById('composition')?.value || '',
-        aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
-        output: json,
-        favorite: false
-      };
-
-      promptHistory.unshift(historyItem);
-      promptHistory = promptHistory.slice(0, 20);
-      saveHistory();
-      renderHistory();
-
-      resultsSection.classList.remove('hidden');
-      setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth' }), 150);
-    } catch (err) {
-      console.error(err);
-      updateStatus('Error');
-      alert('Hubo un problema de conexiÃ³n.');
-    } finally {
-      generateBtn.disabled = false;
-      generateBtn.innerHTML = 'âœ¨ DIRIGIR ESCENA âœ¨';
-      generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    if (!promptText) {
+      alert('Llena campos.');
+      return;
     }
-  });
+  }
 
+  generateBtn.disabled = true;
+  generateBtn.innerHTML = 'LO BUENO DEMORA UN POCO... <span class="loading-dots"></span>';
+  generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  resultsSection.classList.add('hidden');
+
+  try {
+    const data = await fetchWithFallback(promptText, negatives);
+    console.log('JSON RECIBIDO DEL BACKEND:', data);
+
+    updateResultsFromJson(data, promptText, inputsDisplay, isExpertMode);
+
+    const historyItem = {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      createdAt: new Date().toISOString(),
+      title: (promptText || 'Prompt').slice(0, 42),
+      mode: isExpertMode ? 'expert' : 'learner',
+      promptText,
+      negatives,
+      subject: document.getElementById('subject')?.value || '',
+      action: document.getElementById('action')?.value || '',
+      environment: document.getElementById('environment')?.value || '',
+      style: document.getElementById('style')?.value || '',
+      lighting: document.getElementById('lighting')?.value || '',
+      composition: document.getElementById('composition')?.value || '',
+      aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
+      output: data,
+      favorite: false
+    };
+
+    promptHistory.unshift(historyItem);
+    promptHistory = promptHistory.slice(0, 20);
+    saveHistory();
+    renderHistory();
+
+    resultsSection.classList.remove('hidden');
+    setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth' }), 150);
+  } catch (err) {
+    console.error(err);
+    updateStatus('Error');
+    alert('Hubo un problema de conexión.');
+  } finally {
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = '✨ DIRIGIR ESCENA ✨';
+    generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+  }
+});
+    
   historyToggleBtn.addEventListener('click', () => {
     historyDrawer.classList.contains('open') ? closeHistoryDrawer() : openHistoryDrawer();
   });
