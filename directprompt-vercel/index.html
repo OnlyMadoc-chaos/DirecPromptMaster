@@ -763,6 +763,44 @@
     if (el) el.innerText = text || '';
   }
 
+function normalizeKeys(json) {
+  return {
+    mjes: json.midjourneyes || json.midjourney_es || json.midjourneyES || json.midjourney || '',
+    mjen: json.midjourneyen || json.midjourney_en || json.midjourneyEN || '',
+    dallees: json.dallees || json.dalle_es || json.dalleES || json.dalle || '',
+    dalleen: json.dalleen || json.dalle_en || json.dalleEN || '',
+    sdpos: json.sdpositiveen || json.sd_positive_en || json.sdPositiveEn || json.sdpositive || '',
+    sdneg: json.sdnegativeen || json.sd_negative_en || json.sdNegativeEn || json.sdnegative || '',
+    gemini: json.geminiimageen || json.gemini_image_en || json.geminiImageEn || json.geminiimage || '',
+    profile: json.jsoncontextprofile || json.json_context_profile || json.contextProfile || json.profile || json
+  };
+}
+
+function updateResultsFromJson(json, promptText, inputsDisplay, isExpertModeFlag) {
+  const normalized = normalizeKeys(json);
+
+  safeSetText('mjPromptes', normalized.mjes);
+  safeSetText('mjPrompten', normalized.mjen);
+  safeSetText('dallePromptes', normalized.dallees);
+  safeSetText('dallePrompten', normalized.dalleen);
+  safeSetText('sdPositivePrompten', normalized.sdpos);
+  safeSetText('sdNegativePrompten', normalized.sdneg);
+  safeSetText('geminiPrompten', normalized.gemini);
+  safeSetText('fullJsonOutput', JSON.stringify(normalized.profile, null, 2));
+
+  const anatomy = document.getElementById('anatomyContainer');
+  if (isExpertModeFlag) {
+    anatomy.innerHTML = `<div class="italic text-slate-400">${promptText}</div>`;
+  } else {
+    anatomy.innerHTML = inputsDisplay.map(i => `
+      <div class="flex gap-4">
+        <span class="text-yellow-500 font-bold uppercase text-[9px] w-32 text-right tracking-widest">${i.key}</span>
+        <span class="text-slate-200">${i.val}</span>
+      </div>
+    `).join('');
+  }
+}
+    
   function updateStatus(msg) {
     if (statusLog) statusLog.innerText = msg || '';
   }
