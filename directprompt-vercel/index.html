@@ -452,59 +452,72 @@
     }
 
     function exportSingleItem(id, type) {
-      const item = promptHistory.find(x => x.id === id);
-      if (!item) return;
-      const content = type === 'json'
-        ? JSON.stringify(item, null, 2)
-        : `${item.title || 'Prompt'}\n\n${item.promptText || ''}\n\nNegativos: ${item.negatives || ''}`;
-      const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = type === 'json' ? `${item.title || 'prompt'}.json` : `${item.title || 'prompt'}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
+  const item = promptHistory.find(x => x.id === id);
+  if (!item) return;
+
+  const content = type === 'json'
+    ? JSON.stringify(item, null, 2)
+    : [
+        `Title: ${item.title || 'Prompt'}`,
+        `Mode: ${item.mode || 'learner'}`,
+        `Subject: ${item.subject || ''}`,
+        `Action: ${item.action || ''}`,
+        `Environment: ${item.environment || ''}`,
+        `Style: ${item.style || ''}`,
+        `Lighting: ${item.lighting || ''}`,
+        `Composition: ${item.composition || ''}`,
+        `Aspect Ratio: ${item.aspectRatio || 'N/R'}`,
+        `Negatives: ${item.negatives || ''}`,
+        `Prompt: ${item.promptText || ''}`
+      ].join('\n');
+
+  const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = type === 'json' ? `${item.title || 'prompt'}.json` : `${item.title || 'prompt'}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
     function loadPromptFromHistory(item) {
-      if (!item) return;
+  if (!item) return;
 
-      if (item.mode === 'expert') {
-        if (document.getElementById('expertMode')?.classList.contains('hidden')) {
-          toggleModeBtn.click();
-        }
-        expertPromptTextarea.value = item.promptText || '';
-      } else {
-        if (document.getElementById('learnerMode')?.classList.contains('hidden')) {
-          toggleModeBtn.click();
-        }
-
-        const parts = (item.promptText || '').split(', ').map(s => s.trim());
-        const map = {};
-        parts.forEach(pair => {
-          const idx = pair.indexOf(':');
-          if (idx > -1) {
-            const key = pair.slice(0, idx).trim();
-            const val = pair.slice(idx + 1).trim();
-            map[key] = val;
-          }
-        });
-
-        if (map.subject && document.getElementById('subject')) document.getElementById('subject').value = map.subject;
-        if (map.action && document.getElementById('action')) document.getElementById('action').value = map.action;
-        if (map.environment && document.getElementById('environment')) document.getElementById('environment').value = map.environment;
-        if (map.style && document.getElementById('style')) document.getElementById('style').value = map.style;
-        if (map.lighting && document.getElementById('lighting')) document.getElementById('lighting').value = map.lighting;
-        if (map.composition && document.getElementById('composition')) document.getElementById('composition').value = map.composition;
-        if (map.aspectRatio && document.getElementById('aspectRatio')) document.getElementById('aspectRatio').value = map.aspectRatio;
-      }
-
-      updateStatus('Prompt cargado desde historial');
-      openHistoryDrawer();
+  if (item.mode === 'expert') {
+    if (document.getElementById('expertMode')?.classList.contains('hidden')) {
+      toggleModeBtn.click();
+    }
+    expertPromptTextarea.value = item.promptText || '';
+  } else {
+    if (document.getElementById('learnerMode')?.classList.contains('hidden')) {
+      toggleModeBtn.click();
     }
 
+    const setValue = (id, value) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = value || '';
+      if (el.tagName === 'SELECT' && value) {
+        const match = Array.from(el.options).find(opt => opt.value === value);
+        if (match) el.value = value;
+      }
+    };
+
+    setValue('subject', item.subject);
+    setValue('action', item.action);
+    setValue('environment', item.environment);
+    setValue('style', item.style);
+    setValue('lighting', item.lighting);
+    setValue('composition', item.composition);
+    setValue('aspectRatio', item.aspectRatio);
+    setValue('customNegative', item.negatives);
+  }
+
+  updateStatus('Prompt cargado desde historial');
+  openHistoryDrawer();
+}
     function duplicateHistoryItem(id) {
       const item = promptHistory.find(x => x.id === id);
       if (!item) return;
@@ -599,20 +612,35 @@
     }
 
     function exportAllHistory(type) {
-      const content = type === 'json'
-        ? JSON.stringify(promptHistory, null, 2)
-        : promptHistory.map(i => `${i.title}\n${i.promptText}\nNegativos: ${i.negatives || ''}\n`).join('\n---\n');
+  const content = type === 'json'
+    ? JSON.stringify(promptHistory, null, 2)
+    : promptHistory.map(i => {
+        const lines = [
+          `Title: ${i.title || 'Prompt'}`,
+          `Mode: ${i.mode || 'learner'}`,
+          `Subject: ${i.subject || ''}`,
+          `Action: ${i.action || ''}`,
+          `Environment: ${i.environment || ''}`,
+          `Style: ${i.style || ''}`,
+          `Lighting: ${i.lighting || ''}`,
+          `Composition: ${i.composition || ''}`,
+          `Aspect Ratio: ${i.aspectRatio || 'N/R'}`,
+          `Negatives: ${i.negatives || ''}`,
+          `Prompt: ${i.promptText || ''}`
+        ];
+        return lines.join('\n');
+      }).join('\n\n---\n\n');
 
-      const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = type === 'json' ? 'directprompt-history.json' : 'directprompt-history.txt';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
+  const blob = new Blob([content], { type: type === 'json' ? 'application/json' : 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = type === 'json' ? 'directprompt-history.json' : 'directprompt-history.txt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
     function safeCopy(elementId, button) {
       const el = document.getElementById(elementId);
@@ -791,17 +819,23 @@
           `).join('');
         }
 
-        const historyItem = {
-          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-          createdAt: new Date().toISOString(),
-          title: (promptText || 'Prompt').slice(0, 42),
-          mode: isExpertMode ? 'expert' : 'learner',
-          promptText,
-          negatives,
-          aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
-          output: json,
-          favorite: false
-        };
+       const historyItem = {
+  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+  createdAt: new Date().toISOString(),
+  title: (promptText || 'Prompt').slice(0, 42),
+  mode: isExpertMode ? 'expert' : 'learner',
+  promptText,
+  negatives,
+  subject: document.getElementById('subject')?.value || '',
+  action: document.getElementById('action')?.value || '',
+  environment: document.getElementById('environment')?.value || '',
+  style: document.getElementById('style')?.value || '',
+  lighting: document.getElementById('lighting')?.value || '',
+  composition: document.getElementById('composition')?.value || '',
+  aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
+  output: json,
+  favorite: false
+};
 
         promptHistory.unshift(historyItem);
         promptHistory = promptHistory.slice(0, 20);
