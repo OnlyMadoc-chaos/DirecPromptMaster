@@ -567,82 +567,129 @@
       loadPromptFromHistory(duplicated);
     }
 
-    function recreateVariant(item) {
-      if (!item) return;
+function recreateVariant(item) {
+  if (!item) return;
 
-      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-      const variantMaps = {
-        style: [
-          "cinematic photorealistic, 8k, movie still, highly detailed",
-          "studio ghibli style, whimsical, hand-drawn anime",
-          "digital art illustration, trending on artstation, masterpiece",
-          "cyberpunk aesthetic, synthwave neon, futuristic",
-          "classic oil painting, textured canvas, museum quality",
-          "unreal engine 5, octane render, 3d volumetric"
-        ],
-        lighting: [
-          "dramatic rim lighting, high contrast, moody",
-          "soft volumetric sunlight, ethereal glow",
-          "neon cyberpunk night, hazy fog, glowing accents",
-          "golden hour rays, warm hazy light",
-          "professional studio lighting, softbox",
-          "bioluminescent glow, mystical light"
-        ],
-        composition: [
-          "wide shot, epic cinematic scale, landscape",
-          "extreme close up portrait, macro detail",
-          "low angle, heroic perspective, grand scale",
-          "symmetrical centered composition, balanced",
-          "top down perspective, aerial drone view"
-        ]
-      };
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
-      const base = { ...item };
+  const variantMaps = {
+    style: [
+      "cinematic photorealistic, 8k, movie still, highly detailed",
+      "studio ghibli style, whimsical, hand-drawn anime",
+      "digital art illustration, trending on artstation, masterpiece",
+      "cyberpunk aesthetic, synthwave neon, futuristic",
+      "classic oil painting, textured canvas, museum quality",
+      "unreal engine 5, octane render, 3d volumetric",
+      "editorial fashion photography, ultra refined, luxury mood",
+      "gritty documentary realism, handheld camera, raw texture",
+      "surreal fantasy concept art, dreamlike composition",
+      "minimalist clean design, high contrast, premium visual"
+    ],
+    lighting: [
+      "dramatic rim lighting, high contrast, moody",
+      "soft volumetric sunlight, ethereal glow",
+      "neon cyberpunk night, hazy fog, glowing accents",
+      "golden hour rays, warm hazy light",
+      "professional studio lighting, softbox",
+      "bioluminescent glow, mystical light",
+      "cold moonlight, deep shadows, cinematic contrast",
+      "hard overhead light, industrial realism",
+      "backlit silhouette, atmospheric haze",
+      "diffused skylight, soft shadows, clean highlights"
+    ],
+    composition: [
+      "wide shot, epic cinematic scale, landscape",
+      "extreme close up portrait, macro detail",
+      "low angle, heroic perspective, grand scale",
+      "symmetrical centered composition, balanced",
+      "top down perspective, aerial drone view",
+      "dynamic diagonal composition, motion energy",
+      "over-the-shoulder perspective, narrative framing",
+      "center weighted composition, strong focal point",
+      "rule of thirds composition, natural balance",
+      "tight crop, intense focus, dramatic framing"
+    ]
+  };
 
-      if ((base.mode || 'learner') === 'learner') {
-        const currentStyle = base.style || '';
-        const currentLighting = base.lighting || '';
-        const currentComposition = base.composition || '';
+  const base = { ...item };
 
-        const stylePool = variantMaps.style.filter(x => x !== currentStyle);
-        const lightingPool = variantMaps.lighting.filter(x => x !== currentLighting);
-        const compositionPool = variantMaps.composition.filter(x => x !== currentComposition);
+  if ((base.mode || 'learner') === 'learner') {
+    const currentStyle = base.style || '';
+    const currentLighting = base.lighting || '';
+    const currentComposition = base.composition || '';
 
-        base.style = stylePool.length ? pick(stylePool) : currentStyle;
-        base.lighting = lightingPool.length ? pick(lightingPool) : currentLighting;
-        base.composition = compositionPool.length ? pick(compositionPool) : currentComposition;
+    const stylePool = variantMaps.style.filter(x => x !== currentStyle);
+    const lightingPool = variantMaps.lighting.filter(x => x !== currentLighting);
+    const compositionPool = variantMaps.composition.filter(x => x !== currentComposition);
 
-        base.promptText = [
-          `subject: ${base.subject || ''}`,
-          `action: ${base.action || ''}`,
-          `environment: ${base.environment || ''}`,
-          `style: ${base.style || ''}`,
-          `lighting: ${base.lighting || ''}`,
-          `composition: ${base.composition || ''}`,
-          `aspectRatio: ${base.aspectRatio || 'N/R'}`
-        ].join(', ');
-      } else {
-        base.promptText = (base.promptText || '')
-          .replace(/Camera:[^\n]*/i, 'Camera: more cinematic angle')
-          .replace(/Lighting:[^\n]*/i, 'Lighting: more dramatic lighting')
-          .replace(/Mood:[^\n]*/i, 'Mood: more intense and atmospheric');
-      }
+    base.style = stylePool.length ? pick(stylePool) : pick(variantMaps.style);
+    base.lighting = lightingPool.length ? pick(lightingPool) : pick(variantMaps.lighting);
+    base.composition = compositionPool.length ? pick(compositionPool) : pick(variantMaps.composition);
 
-      const variant = {
-        ...base,
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        createdAt: new Date().toISOString(),
-        title: `${base.title || 'Prompt'} (Variante)`,
-        favorite: false
-      };
+    const subjectVariants = [
+      base.subject || '',
+      base.subject ? `${base.subject} with subtle motion` : '',
+      base.subject ? `cinematic ${base.subject}` : '',
+      base.subject ? `${base.subject} in dramatic focus` : ''
+    ].filter(Boolean);
 
-      promptHistory.unshift(variant);
-      promptHistory = promptHistory.slice(0, 20);
-      saveHistory();
-      renderHistory();
-      loadPromptFromHistory(variant);
-    }
+    const actionVariants = [
+      base.action || '',
+      base.action ? `${base.action}, with visible energy` : '',
+      base.action ? `${base.action}, in a tense moment` : ''
+    ].filter(Boolean);
 
+    const environmentVariants = [
+      base.environment || '',
+      base.environment ? `${base.environment}, with atmospheric depth` : '',
+      base.environment ? `${base.environment}, enhanced cinematic environment` : ''
+    ].filter(Boolean);
+
+    base.subject = pick(subjectVariants);
+    base.action = pick(actionVariants);
+    base.environment = pick(environmentVariants);
+
+    base.promptText = [
+      `subject: ${base.subject || ''}`,
+      `action: ${base.action || ''}`,
+      `environment: ${base.environment || ''}`,
+      `style: ${base.style || ''}`,
+      `lighting: ${base.lighting || ''}`,
+      `composition: ${base.composition || ''}`,
+      `aspectRatio: ${base.aspectRatio || 'N/R'}`
+    ].join(', ');
+  } else {
+    const expertPool = [
+      "Camera: low angle, cinematic framing",
+      "Camera: close up, emotional tension",
+      "Camera: wide shot, atmospheric depth",
+      "Lighting: dramatic rim lighting",
+      "Lighting: soft volumetric sunlight",
+      "Lighting: neon cyberpunk glow",
+      "Mood: intense and atmospheric",
+      "Mood: elegant, premium, high detail",
+      "Composition: balanced and symmetrical",
+      "Composition: dynamic diagonal framing"
+    ];
+
+    base.promptText = `${base.promptText || ''}\n\n${pick(expertPool)}\n${pick(expertPool)}\n${pick(expertPool)}`;
+  }
+
+  const variant = {
+    ...base,
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    createdAt: new Date().toISOString(),
+    title: `${base.title || 'Prompt'} (Variante)`,
+    favorite: false
+  };
+
+  promptHistory.unshift(variant);
+  promptHistory = promptHistory.slice(0, 20);
+  saveHistory();
+  renderHistory();
+  loadPromptFromHistory(variant);
+}
+    
     function renderHistory() {
       if (!historyList) return;
 
@@ -841,13 +888,25 @@
       document.getElementById('action').value = pick(RANDOMDATA.actions);
       document.getElementById('environment').value = pick(RANDOMDATA.environments);
 
-      const sets = [
-        { id: 'style', data: RANDOMDATA.styles },
-        { id: 'lighting', data: RANDOMDATA.lightings },
-        { id: 'composition', data: RANDOMDATA.compositions },
-        { id: 'aspectRatio', data: RANDOMDATA.ratios }
-      ];
+    const sets = [
+  { id: 'style', data: RANDOMDATA.styles },
+  { id: 'lighting', data: RANDOMDATA.lightings },
+  { id: 'composition', data: RANDOMDATA.compositions },
+  { id: 'aspectRatio', data: RANDOMDATA.ratios }
+];
+      
+const forceVariety = () => {
+  const styleEl = document.getElementById('style');
+  const lightEl = document.getElementById('lighting');
+  const compEl = document.getElementById('composition');
 
+  if (styleEl && Math.random() > 0.5) styleEl.selectedIndex = 1 + Math.floor(Math.random() * (styleEl.options.length - 1));
+  if (lightEl && Math.random() > 0.5) lightEl.selectedIndex = 1 + Math.floor(Math.random() * (lightEl.options.length - 1));
+  if (compEl && Math.random() > 0.5) compEl.selectedIndex = 1 + Math.floor(Math.random() * (compEl.options.length - 1));
+};
+
+forceVariety();
+      
       sets.forEach(set => {
         const el = document.getElementById(set.id);
         const randomValue = pick(set.data);
