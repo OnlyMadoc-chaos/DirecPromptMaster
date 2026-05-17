@@ -641,6 +641,175 @@ function migrateHistoryToNodes() {
   saveTree();
 }
 
+    function buildTree(nodes) {
+  const map = new Map(nodes.map(n => [n.id, { ...n, children: [] }]));
+  const roots = [];
+
+  map.forEach(node => {
+    if (node.parentId && map.has(node.parentId)) {
+      map.get(node.parentId).children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  const walk = arr => {
+    arr
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      .forEach(n => walk(n.children));
+  };
+
+  walk(roots);
+  return roots;
+}
+
+function findNode(id) {
+  return promptNodes.find(n => n.id === id);
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function toggleNodeExpand(id) {
+  promptNodes = promptNodes.map(n =>
+    n.id === id
+      ? { ...n, ui: { ...(n.ui || {}), expanded: !(n.ui && n.ui.expanded) } }
+      : n
+  );
+
+  saveTree();
+  renderTree();
+}
+
+function toggleBadge(nodeId, key) {
+  promptNodes = promptNodes.map(n => {
+    if (n.id !== nodeId) return n;
+
+    const open = new Set((n.ui && n.ui.openBadges) || []);
+    open.has(key) ? open.delete(key) : open.add(key);
+
+    return {
+      ...n,
+      ui: {
+        ...(n.ui || {}),
+        openBadges: Array.from(open)
+      }
+    };
+  });
+
+  saveTree();
+  renderTree();
+}
+
+function renderBadge(node, key, label, content) {
+  if (!content) return '';
+
+  const open = ((node.ui && node.ui.openBadges) || []).includes(key);
+
+  return `
+    <div>
+      <button class="badge-toggle" onclick="toggleBadge('${node.id}','${key}')">${label}</button>
+      ${open ? `<div class="badge-panel text-sm text-slate-200 whitespace-pre-wrap mt-2">${escapeHtml(typeof content === 'string' ? content : JSON.stringify(content, null, 2))}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderTreeNode(node, depth = 0) {
+  const childCount = (node.children || []).length;
+  const expanded = node.ui && node.ui.expanded;
+  const modeClass = node.mode === 'expert' ? 'expert' : 'learner';
+
+  const badges = [
+    renderBadge(node, 'mj', 'MJ', node.outputs && node.outputs.mj),
+    renderBadge(node, 'dalle', 'DALL·E', node.outputs && node.outputs.dalle),
+    renderBadge(node, 'sdp', 'SD+', node.outputs && node.outputs.sdp),
+    renderBadge(node, 'sdn', 'SD-', node.outputs && node.outputs.sdn),
+    renderBadge(node, 'gemini', 'Gemini', node.outputs && node.outputs.gemini),
+    renderBadge(node, 'json', 'JSON', node.outputs && node.outputs.profile),
+    renderBadge(node, 'note', 'Nota', node.creativeNote || '')
+  ].join('');
+
+  return `
+    <div class="tree-node tree-depth-${depth}" style="margin-left:${depth * 18}px">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="mode-pill ${modeClass}">${escapeHtml(node.mode)}</span>
+            ${node.isCheckpoint ? '<span class="checkpoint-dot bg-emerald-400"></span>' : ''}
+            ${node.favorite ? '<span class="text-yellow-400">★</span>' : ''}
+            <span class="text-[10px] uppercase tracking-[0.16em] text-slate-500">${escapeHtml(node.aspectRatio || 'N/R')}</span>
+            ${childCount ? `<span class="text-[10px] uppercase tracking-[0.16em] text-slate-500">${childCount} hijos</span>` : ''}
+          </div>
+
+          <div class="text-white font-semibold text-sm md:text-base">
+            ${escapeHtml(node.title || 'Prompt sin título')}
+          </div>
+
+          <div class="text-slate-400 text-xs mt-1">
+            ${escapeHtml(new Date(node.createdAt).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }))}
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button class="tree-action bg-white/5 text-slate-200" onclick="toggleNodeExpand('${node.id}')">
+            ${expanded ? 'Contraer' : 'Expandir'}
+          </button>
+
+          <button class="tree-action bg-blue-500/15 text-blue-200 border-blue-400/20" onclick="loadNodeToEditor('${node.id}')">
+            Cargar
+          </button>
+
+          <button class="tree-action bg-cyan-500/15 text-cyan-200 border-cyan-400/20" onclick="duplicateNode('${node.id}')">
+            Duplicar
+          </button>
+
+          <button class="tree-action bg-violet-500/15 text-violet-200 border-violet-400/20" onclick="variantNode('${node.id}')">
+            Variante
+          </button>
+
+          <button class="tree-action bg-amber-500/15 text-amber-200 border-amber-400/20" onclick="editNodeMeta('${node.id}')">
+            Editar
+          </button>
+        </div>
+      </div>
+
+      ${expanded ? `
+        <div class="mt-4 space-y-4">
+          <div class="badge-panel">
+            <div class="text-[10px] uppercase tracking-[0.18em] text-yellow-400 mb-2">Prompt Humano</div>
+            <div class="text-sm text-slate-200 whitespace-pre-wrap">${escapeHtml(node.promptHuman || '')}</div>
+          </div>
+
+          <div class="flex flex-wrap gap-2">${badges}</div>
+        </div>
+      ` : ''}
+
+      ${node.children && node.children.length
+        ? `<div class="tree-children">${node.children.map(child => renderTreeNode(child, depth + 1)).join('')}</div>`
+        : ''}
+    </div>
+  `;
+}
+
+function renderTree() {
+  migrateHistoryToNodes();
+  const roots = buildTree(promptNodes);
+
+  treeList.innerHTML = roots.length
+    ? roots.map(root => renderTreeNode(root)).join('')
+    : `
+      <div class="text-center text-slate-500 text-sm py-10 border border-dashed border-white/10 rounded-2xl">
+        Aún no hay nodos guardados.
+      </div>
+    `;
+}
+
     function toggleFavorite(id) {
       promptHistory = promptHistory.map(item => item.id === id ? { ...item, favorite: !item.favorite } : item);
       saveHistory();
@@ -710,20 +879,150 @@ function migrateHistoryToNodes() {
       }
 
       updateStatus('Prompt cargado desde historial');
-      openHistoryDrawer();
+setActiveView(resultsSection.classList.contains('hidden') ? 'editor' : 'results');
     }
 
-    function duplicateHistoryItem(id) {
-      const item = promptHistory.find(x => x.id === id);
-      if (!item) return;
+function loadNodeToEditor(id) {
+  const node = findNode(id);
+  if (!node) return;
 
-      const duplicated = {
-        ...item,
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        createdAt: new Date().toISOString(),
-        title: `${item.title || 'Prompt'} (Copia)`,
-        favorite: false
-      };
+  currentNodeId = node.id;
+
+  const legacy = {
+    id: node.id,
+    mode: node.mode,
+    title: node.title,
+    promptText: node.promptHuman,
+    favorite: node.favorite,
+    subject: node.inputs && node.inputs.subject,
+    action: node.inputs && node.inputs.action,
+    environment: node.inputs && node.inputs.environment,
+    style: node.inputs && node.inputs.style,
+    lighting: node.inputs && node.inputs.lighting,
+    composition: node.inputs && node.inputs.composition,
+    aspectRatio: node.inputs && node.inputs.aspectRatio,
+    negatives: node.inputs && node.inputs.negatives
+  };
+
+  loadPromptFromHistory(legacy);
+}
+
+function createChildNode(base, data) {
+  const now = new Date().toISOString();
+
+  return {
+    ...base,
+    ...data,
+    id: crypto.randomUUID(),
+    parentId: base.id,
+    favorite: false,
+    isCheckpoint: false,
+    createdAt: now,
+    updatedAt: now,
+    ui: { expanded: false, openBadges: [] }
+  };
+}
+
+function duplicateNode(id) {
+  const node = findNode(id);
+  if (!node) return;
+
+  promptNodes.push(
+    createChildNode(node, {
+      title: `${node.title || 'Prompt'} (Copia)`
+    })
+  );
+
+  saveTree();
+  renderTree();
+}
+
+function variantNode(id) {
+  const node = findNode(id);
+  if (!node) return;
+
+  const clone = JSON.parse(JSON.stringify(node));
+
+  if ((clone.mode || 'learner') === 'learner') {
+    const styles = [
+      'cinematic photorealistic, 8k, movie still, highly detailed',
+      'studio ghibli style, whimsical, hand-drawn anime',
+      'digital art illustration, trending on artstation, masterpiece',
+      'cyberpunk aesthetic, synthwave neon, futuristic',
+      'classic oil painting, textured canvas, museum quality',
+      'unreal engine 5, octane render, 3d volumetric'
+    ];
+
+    const lightings = [
+      'dramatic rim lighting, high contrast, moody',
+      'soft volumetric sunlight, ethereal glow',
+      'neon cyberpunk night, hazy fog, glowing accents',
+      'golden hour rays, warm hazy light',
+      'professional studio lighting, softbox',
+      'bioluminescent glow, mystical light'
+    ];
+
+    const compositions = [
+      'wide shot, epic cinematic scale, landscape',
+      'extreme close up portrait, macro detail',
+      'low angle, heroic perspective, grand scale',
+      'symmetrical centered composition, balanced',
+      'top down perspective, aerial drone view'
+    ];
+
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    clone.inputs.style = pick(styles.filter(x => x !== clone.inputs.style));
+    clone.inputs.lighting = pick(lightings.filter(x => x !== clone.inputs.lighting));
+    clone.inputs.composition = pick(compositions.filter(x => x !== clone.inputs.composition));
+
+    clone.promptHuman = `subject: ${clone.inputs.subject || ''}, action: ${clone.inputs.action || ''}, environment: ${clone.inputs.environment || ''}, style: ${clone.inputs.style || ''}, lighting: ${clone.inputs.lighting || ''}, composition: ${clone.inputs.composition || ''}, aspectRatio: ${clone.inputs.aspectRatio || 'N/R'}`;
+  } else {
+    clone.promptHuman = (clone.promptHuman || '')
+      .replace(/Camera:[^\n]*/i, 'Camera: more cinematic angle')
+      .replace(/Lighting:[^\n]*/i, 'Lighting: more dramatic lighting')
+      .replace(/Mood:[^\n]*/i, 'Mood: more intense and atmospheric');
+  }
+
+  promptNodes.push(
+    createChildNode(node, {
+      title: `${node.title || 'Prompt'} (Variante)`,
+      promptHuman: clone.promptHuman,
+      inputs: clone.inputs
+    })
+  );
+
+  saveTree();
+  renderTree();
+}
+
+function editNodeMeta(id) {
+  const node = findNode(id);
+  if (!node) return;
+
+  const title = prompt('Título del nodo', node.title || '') ?? node.title;
+  const creativeNote = prompt('Nota creativa', node.creativeNote || '') ?? node.creativeNote;
+  const isCheckpoint = confirm('¿Marcar como checkpoint?');
+
+  promptNodes = promptNodes.map(n =>
+    n.id === id
+      ? {
+          ...n,
+          title,
+          creativeNote,
+          isCheckpoint,
+          updatedAt: new Date().toISOString()
+        }
+      : n
+  );
+
+  saveTree();
+  renderTree();
+}
+    
+    function duplicateHistoryItem(id) {
+  duplicateNode(id);
+}
 
       promptHistory.unshift(duplicated);
       promptHistory = promptHistory.slice(0, 20);
@@ -905,10 +1204,8 @@ function recreateVariant(item) {
     }
 
     function variantHistoryItem(id) {
-      const item = promptHistory.find(x => x.id === id);
-      if (!item) return;
-      recreateVariant(item);
-    }
+  variantNode(id);
+}
 
     function exportAllHistory(type) {
       const content = type === 'json'
@@ -1041,7 +1338,8 @@ function recreateVariant(item) {
       });
 
       resultsSection.classList.add('hidden');
-      updateStatus('Dashboard reseteado');
+setActiveView('editor');
+updateStatus('Dashboard reseteado');
       setTimeout(() => updateStatus(''), 1500);
     });
 
@@ -1166,12 +1464,43 @@ forceVariety();
         };
 
         promptHistory.unshift(historyItem);
-        promptHistory = promptHistory.slice(0, 20);
-        saveHistory();
-        renderHistory();
+promptHistory = promptHistory.slice(0, 20);
+saveHistory();
 
-        resultsSection.classList.remove('hidden');
-        setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth' }), 150);
+const newNode = {
+  id: crypto.randomUUID(),
+  parentId: currentNodeId || null,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  mode: isExpertMode ? 'expert' : 'learner',
+  title: (promptText || 'Prompt').slice(0, 42),
+  promptHuman: promptText,
+  creativeNote: '',
+  favorite: false,
+  isCheckpoint: false,
+  aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
+  inputs: {
+    subject: document.getElementById('subject')?.value || '',
+    action: document.getElementById('action')?.value || '',
+    environment: document.getElementById('environment')?.value || '',
+    style: document.getElementById('style')?.value || '',
+    lighting: document.getElementById('lighting')?.value || '',
+    composition: document.getElementById('composition')?.value || '',
+    aspectRatio: document.getElementById('aspectRatio')?.value || 'N/R',
+    negatives
+  },
+  outputs: normalizeOutputs(data),
+  ui: { expanded: false, openBadges: [] }
+};
+
+promptNodes.push(newNode);
+currentNodeId = newNode.id;
+saveTree();
+renderTree();
+
+resultsSection.classList.remove('hidden');
+setActiveView('results');
+setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth' }), 150);
       } catch (err) {
         console.error(err);
         updateStatus('Error');
@@ -1184,15 +1513,42 @@ forceVariety();
     });
 
     historyToggleBtn.addEventListener('click', () => {
-      historyDrawer.classList.contains('open') ? closeHistoryDrawer() : openHistoryDrawer();
-    });
+  renderTree();
+  setActiveView('tree');
+});
 
-    historyCloseBtn.addEventListener('click', closeHistoryDrawer);
-    historyOverlay.addEventListener('click', closeHistoryDrawer);
-    exportHistoryTxtBtn.addEventListener('click', () => exportAllHistory('txt'));
-    exportHistoryJsonBtn.addEventListener('click', () => exportAllHistory('json'));
+treeBackBtn.addEventListener('click', () => {
+  setActiveView(resultsSection.classList.contains('hidden') ? 'editor' : 'results');
+});
 
-    renderHistory();
+exportHistoryTxtBtn.addEventListener('click', () => {
+  const content = JSON.stringify(promptNodes, null, 2);
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'directprompt-tree.txt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+exportHistoryJsonBtn.addEventListener('click', () => {
+  const content = JSON.stringify(promptNodes, null, 2);
+  const blob = new Blob([content], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'directprompt-tree.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+migrateHistoryToNodes();
+renderTree();
   </script>
 </body>
 </html>
